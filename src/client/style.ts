@@ -139,16 +139,16 @@ const CSS = `
 .dsh-board-panel::-webkit-scrollbar-track {
   background: transparent;
 }
-.dsh-board-float-wide .dsh-board-panel {
-  position: absolute;
-  left: calc(100% + 8px);
-  bottom: 0;
-  z-index: 60;
-}
 .dsh-board-float .dsh-board-panel {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 0;
+  z-index: 60;
+}
+.dsh-board-float-wide .dsh-board-panel {
+  position: absolute;
+  left: calc(100% + 8px);
+  bottom: 0;
   z-index: 60;
 }
 .dsh-board-panel-title {
