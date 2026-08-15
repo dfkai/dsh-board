@@ -28,10 +28,24 @@ dsh plugin --profile webtest add github:dfkai/dsh-rich
 ## 开发循环
 
 ```
-改 src → pnpm build（或 pnpm watch）→ 浏览器热更
+改 src → pnpm build → pnpm sync -- <profile 目录> → 浏览器热更
 ```
 
-宿主侧 HMR 轮询 bundle 文件 mtime，重建即自动热刷；只有改 manifest（package.json / cordis.patch.yml）才需要重装 tarball + 重启 profile。
+宿主侧 HMR 轮询已安装 bundle 的 mtime，`sync` 把新构建的 `lib/client.js(+.map)` 拷进安装副本即可热刷（无需重启、无需重装 tarball）：
+
+```sh
+pnpm sync -- ~/.dsh/profiles/webtest
+```
+
+只有改 manifest（package.json / cordis.patch.yml）才需要重装 tarball + 重启 profile。
+
+### 无头验证（可选）
+
+```sh
+python3 -m playwright install chromium          # 首次
+python3 test/e2e.py                             # 面板挂载 + 控制台错误检查
+python3 test/drive-turn.py '用一句话介绍你自己'   # 驱动真实对话，读面板数值
+```
 
 ## 架构说明（只依赖公开接口）
 

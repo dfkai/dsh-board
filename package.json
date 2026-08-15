@@ -1,7 +1,7 @@
 {
   "name": "dsh-rich",
   "version": "0.1.0",
-  "description": "dsh client panel bundle: a live AI-styled monitor strip above the composer — token usage, context occupancy, turn/step timing.",
+  "description": "dsh client panel bundle: a live AI-styled monitor strip above the composer — token usage, context occupancy, background jobs, subagent state, and turn timing.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -50,7 +50,8 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "prepare": "tsdown"
+    "prepare": "tsdown",
+    "sync": "node scripts/sync.mjs"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
