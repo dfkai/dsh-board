@@ -428,16 +428,18 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     return () => { cancelled = true }
   }, [current, api, panelVisible, steps])
 
+  const panelOpen = wide ? !collapsed : open
   useEffect(() => {
-    if (!open) return
+    if (!panelOpen) return
     const onDown = (event: PointerEvent): void => {
       if (event.target instanceof Node && rootRef.current !== null && !rootRef.current.contains(event.target)) {
-        setOpen(false)
+        if (wide) setCollapsed(true)
+        else setOpen(false)
       }
     }
     document.addEventListener('pointerdown', onDown)
     return () => document.removeEventListener('pointerdown', onDown)
-  }, [open])
+  }, [panelOpen, wide])
 
   const lifetime = useMemo(() => {
     let input = 0
@@ -642,7 +644,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
           : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>}
       </button>
       {wide
-        ? (collapsed ? null : <div className="dsh-board-inline">{panel}</div>)
+        ? (collapsed ? null : <div className="dsh-board-float dsh-board-float-wide">{panel}</div>)
         : open
           ? <div className="dsh-board-float">{panel}</div>
           : null}
