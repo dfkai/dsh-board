@@ -3,9 +3,9 @@
  * https://api-docs.deepseek.com/zh-cn/quick_start/pricing (fetched 2026-08-15).
  *
  * - MODEL_PRICES: the listed standard prices today (thinking-mode inclusive).
- * - PEAK_PRICES / OFF_PEAK_PRICES: the new scheme effective 2026-08-17
- *   (off-peak is half of peak). dsh-rich estimates with the standard table
- *   until the peak-hours window is configured here.
+ * - PEAK_PRICES / OFF_PEAK_PRICES: effective 2026-08-17 00:00 Beijing time;
+ *   peak windows are 09:00–12:00 and 14:00–18:00 Beijing time, off-peak is
+ *   half of peak. `priceFor(model, now)` picks the right table automatically.
  *
  * Estimates only — not a billing source.
  */
@@ -37,16 +37,31 @@ export const OFF_PEAK_PRICES: Record<string, ModelPrice> = {
 /** Fallback model when a session's model is unknown. */
 export const DEFAULT_MODEL = 'deepseek-v4-pro'
 
+/** Effective moment of the peak/off-peak scheme: 2026-08-17 00:00 Beijing time. */
+const EFFECTIVE_AT_MS = Date.UTC(2026, 7, 16, 16)
+
+/** Peak windows in Beijing time: 09:00–12:00 and 14:00–18:00 (rest = off-peak). */
+export function isPeakHour(nowMs = Date.now()): boolean {
+  const beijingHour = (new Date(nowMs).getUTCHours() + 8) % 24
+  return (beijingHour >= 9 && beijingHour < 12) || (beijingHour >= 14 && beijingHour < 18)
+}
+
+/** The price table for a model id at a given moment (peak/off-peak aware). */
+export function priceFor(model: string | undefined, nowMs = Date.now()): ModelPrice {
+  const modelId = model ?? DEFAULT_MODEL
+  if (nowMs >= EFFECTIVE_AT_MS) {
+    const table = isPeakHour(nowMs) ? PEAK_PRICES : OFF_PEAK_PRICES
+    const price = table[modelId]
+    if (price !== undefined) return price
+  }
+  return MODEL_PRICES[modelId] ?? MODEL_PRICES[DEFAULT_MODEL]
+}
+
 export interface BillingUsage {
   uncachedInputTokens: number
   cacheReadTokens: number
   cacheWriteTokens: number
   outputTokens: number
-}
-
-/** The price table for a model id, falling back to the default model. */
-export function priceFor(model: string | undefined): ModelPrice {
-  return MODEL_PRICES[model ?? ''] ?? MODEL_PRICES[DEFAULT_MODEL]
 }
 
 /** Estimate a session's cost from its durable tokenUsage projection. */

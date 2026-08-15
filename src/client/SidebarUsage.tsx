@@ -3,7 +3,7 @@ import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
-import { estimateCost, priceFor } from './pricing.ts'
+import { estimateCost, isPeakHour, priceFor } from './pricing.ts'
 import { foldHistory, formatCost, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 
@@ -401,7 +401,9 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       {lifetime.sessions.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
         : <SessionRows sessions={lifetime.sessions} />}
-      <div className="dsh-rich-note">{t('note.pricing')}</div>
+      <div className="dsh-rich-note">
+        {t('note.pricing')} · {isPeakHour() ? t('window.peak') : t('window.offpeak')}
+      </div>
     </div>
   )
 
