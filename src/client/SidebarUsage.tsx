@@ -55,8 +55,8 @@ function useCountUp(target: number, duration = 600): number {
   return value
 }
 
-function SectionTitle({ emoji, children }: { emoji: string; children: React.ReactNode }): JSX.Element {
-  return <div className="dsh-rich-sec"><span className="dsh-rich-sec-emoji">{emoji}</span>{children}</div>
+function SectionTitle({ children }: { children: React.ReactNode }): JSX.Element {
+  return <div className="dsh-rich-sec">{children}</div>
 }
 
 function MiniEmpty({ text }: { text: string }): JSX.Element {
@@ -130,7 +130,7 @@ function ModelRows({ models, t }: {
       {models.map(item => (
         <div className="dsh-rich-model" key={item.model}>
           <div className="dsh-rich-model-head">
-            <span className="dsh-rich-model-name" title={item.model}>🤖 {item.model}</span>
+            <span className="dsh-rich-model-name" title={item.model}>{item.model}</span>
             <span className="dsh-rich-model-value">{t('model.value', { out: formatTokens(item.output), in: formatTokens(item.input) })}</span>
           </div>
           <div className="dsh-rich-model-bar">
@@ -244,9 +244,9 @@ function MembershipCard({ total, daily, t }: {
   }, [index])
 
   return (
-    <div className={celebrating ? 'dsh-rich-card dsh-rich-levelup' : 'dsh-rich-card'} style={{ '--tier': rank.level.color } as never}>
+    <div className={celebrating ? 'dsh-rich-card dsh-rich-levelup' : 'dsh-rich-card'}>
       <div className="dsh-rich-card-head">
-        <span>🏆 {t('rank.title')}</span>
+        <span>{t('rank.title')}</span>
         <span className="dsh-rich-card-lv">{t('rank.lv', { n: index + 1 })}</span>
       </div>
       <div className="dsh-rich-card-body">
@@ -317,7 +317,6 @@ function MembershipCard({ total, daily, t }: {
               i > index ? 'dsh-rich-card-rung-locked' : '',
             ].filter(Boolean).join(' ')}
             title={`LV.${i + 1} ${level.zh}`}
-            style={i <= index ? { '--tier': level.color } as never : undefined}
           >
             {level.emoji}
           </span>
@@ -445,7 +444,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   const panel = (
     <div className="dsh-rich-panel">
       <div className="dsh-rich-panel-title">
-        <span>⚡ {t('panel.title')}</span>
+        <span>{t('panel.title')}</span>
         <span className="dsh-rich-title-right">
           {running
             ? <span className="dsh-rich-live"><StateDot state="ongoing" className="dsh-rich-dot" />{t('live')}</span>
@@ -468,7 +467,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       <div className="dsh-rich-hero-sub">
         {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)}
       </div>
-      <SectionTitle emoji="💰">{t('sec.session')}</SectionTitle>
+      <SectionTitle>{t('sec.session')}</SectionTitle>
       {usage === undefined
         ? <MiniEmpty text={t('spark.empty')} />
         : (
@@ -483,9 +482,9 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <Row label={t('tokens.total')} value={formatTokens(totalTokens)} />
           </div>
         )}
-      <SectionTitle emoji="🧮">{t('sec.model')}</SectionTitle>
+      <SectionTitle>{t('sec.model')}</SectionTitle>
       {models.length === 0 ? <MiniEmpty text={t('spark.empty')} /> : <ModelRows models={models} t={t} />}
-      <SectionTitle emoji="📈">{t('sec.trend')}</SectionTitle>
+      <SectionTitle>{t('sec.trend')}</SectionTitle>
       {fold.perTurn.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
         : (
@@ -497,11 +496,11 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             </div>
           </>
         )}
-      <SectionTitle emoji="📉">{t('sec.cumulative')}</SectionTitle>
+      <SectionTitle>{t('sec.cumulative')}</SectionTitle>
       {fold.cumulative.length < 2
         ? <MiniEmpty text={t('spark.empty')} />
         : <CumulativeArea values={fold.cumulative.slice(-60)} />}
-      <SectionTitle emoji="📅">{t('sec.heat')}</SectionTitle>
+      <SectionTitle>{t('sec.heat')}</SectionTitle>
       {lifetime.daily.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
         : (
@@ -510,7 +509,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <div className="dsh-rich-heat-note">{t('heat.note')}</div>
           </>
         )}
-      <SectionTitle emoji="🌌">{t('sec.global')}</SectionTitle>
+      <SectionTitle>{t('sec.global')}</SectionTitle>
       {lifetime.sessions.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
         : <SessionRows sessions={lifetime.sessions} />}
@@ -521,7 +520,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   )
 
   return (
-    <div ref={rootRef} className="dsh-rich-foot" style={{ '--tier': rank.level.color } as never}>
+    <div ref={rootRef} className="dsh-rich-foot">
       <button
         type="button"
         className={wide ? 'dsh-rich-trigger' : 'dsh-rich-trigger dsh-rich-orb'}
