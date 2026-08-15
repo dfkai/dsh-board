@@ -108,6 +108,7 @@ const CSS = `
 
 /* Panel: a clean raised surface. */
 .dsh-board-panel {
+  box-sizing: border-box;
   width: 240px;
   max-height: min(480px, 66vh);
   overflow-y: auto;
