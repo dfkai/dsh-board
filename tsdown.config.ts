@@ -22,7 +22,7 @@ const CLIENT_EXTERNALS = [...PLATFORM_MODULES, '@deepseek-ai/dsh-client-runtime/
 export default defineConfig([
   {
     // Node half: a governed, near-empty host entry.
-    name: 'dshboard',
+    name: 'dsh-board',
     entry: ['src/index.ts'],
     outDir: 'lib',
     format: ['esm'],
@@ -35,8 +35,8 @@ export default defineConfig([
   {
     // Browser half: a closure-factory CJS bundle registering itself with the
     // loader module table — the exact artifact shape the web plugin registry
-    // serves under /plugins/dshboard/client.js.
-    name: 'dshboard/client',
+    // serves under /plugins/dsh-board/client.js.
+    name: 'dsh-board/client',
     entry: { client: 'src/client/index.ts' },
     outDir: 'lib',
     format: ['cjs'],
@@ -55,7 +55,7 @@ export default defineConfig([
     noExternal: (id: string) => !CLIENT_EXTERNALS.includes(id),
     outputOptions: {
       entryFileNames: 'client.js',
-      banner: 'window.__ModuleLoader__.load({ id: "dshboard", factory: (require) => {',
+      banner: 'window.__ModuleLoader__.load({ id: "dsh-board", factory: (require) => {',
       footer: 'return module.exports; } });',
       intro: 'var module = { exports: {} }; var exports = module.exports;',
     },

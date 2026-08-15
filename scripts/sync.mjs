@@ -1,4 +1,4 @@
-// Sync the freshly built client bundle into an installed dshboard copy.
+// Sync the freshly built client bundle into an installed dsh-board copy.
 //
 // The dev loop: edit src → pnpm build → pnpm sync:webtest → the host's HMR
 // stat-poll sees the changed bundle and hot-reloads the browser (no restart,
@@ -19,7 +19,7 @@ if (profileDir === '' || !existsSync(profileDir)) {
 }
 
 const requireFromProfile = createRequire(join(profileDir, 'package.json'))
-const packageJson = requireFromProfile.resolve('dshboard/package.json')
+const packageJson = requireFromProfile.resolve('dsh-board/package.json')
 const installedDir = dirname(packageJson)
 const repoDir = dirname(new URL('../package.json', import.meta.url).pathname)
 

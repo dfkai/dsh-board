@@ -23,7 +23,7 @@ export type SidebarUsageProps = PropsRuntime<'sidebar.footer.action'> & PropsLoc
   api: ApiLike
 }
 
-const COLLAPSE_KEY = 'dshboard.collapsed'
+const COLLAPSE_KEY = 'dsh-board.collapsed'
 
 function readCollapsed(): boolean {
   try {
@@ -57,7 +57,7 @@ function useCountUp(target: number, duration = 600): number {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }): JSX.Element {
-  return <div className="dshboard-sec">{children}</div>
+  return <div className="dsh-board-sec">{children}</div>
 }
 
 interface PressureView {
@@ -94,21 +94,21 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
     ]
   const totalParts = parts === null ? 0 : parts.reduce((sum, part) => sum + part.tokens, 0)
   return (
-    <div className="dshboard-context">
-      <div className="dshboard-context-head">
-        <span className="dshboard-context-title">{t('sec.context')}</span>
-        <span className="dshboard-context-value">{percent === null ? '—' : `${percent}%`}</span>
+    <div className="dsh-board-context">
+      <div className="dsh-board-context-head">
+        <span className="dsh-board-context-title">{t('sec.context')}</span>
+        <span className="dsh-board-context-value">{percent === null ? '—' : `${percent}%`}</span>
       </div>
       {percent === null
         ? null
         : (
-          <div className="dshboard-context-bar">
-            <div className="dshboard-context-fill" style={{ width: `${percent}%` }} />
+          <div className="dsh-board-context-bar">
+            <div className="dsh-board-context-fill" style={{ width: `${percent}%` }} />
           </div>
         )}
       {used !== undefined && window !== undefined
         ? (
-          <div className="dshboard-context-sub">
+          <div className="dsh-board-context-sub">
             {formatTokens(used)} / {formatTokens(window)} · {t('ctx.remaining', { count: formatTokens(remaining ?? 0) })}
           </div>
         )
@@ -116,20 +116,20 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
       {parts !== null && totalParts > 0
         ? (
           <>
-            <div className="dshboard-context-stack">
+            <div className="dsh-board-context-stack">
               {parts.filter(part => part.tokens > 0).map(part => (
                 <span
                   key={part.key}
-                  className={`dshboard-context-part dshboard-context-part-${part.key}`}
+                  className={`dsh-board-context-part dsh-board-context-part-${part.key}`}
                   style={{ width: `${part.tokens / totalParts * 100}%` }}
                   title={`${part.label} ${formatTokens(part.tokens)}`}
                 />
               ))}
             </div>
-            <div className="dshboard-context-legend">
+            <div className="dsh-board-context-legend">
               {parts.filter(part => part.tokens > 0).map(part => (
-                <span key={part.key} className="dshboard-context-legend-item">
-                  <i className={`dshboard-context-dot dshboard-context-dot-${part.key}`} />
+                <span key={part.key} className="dsh-board-context-legend-item">
+                  <i className={`dsh-board-context-dot dsh-board-context-dot-${part.key}`} />
                   {part.label} {formatTokens(part.tokens)}
                 </span>
               ))}
@@ -138,7 +138,7 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
         )
         : null}
       {subagentMs !== undefined && subagentMs > 0
-        ? <div className="dshboard-context-sub">{t('ctx.subagent', { duration: formatDuration(subagentMs) })}</div>
+        ? <div className="dsh-board-context-sub">{t('ctx.subagent', { duration: formatDuration(subagentMs) })}</div>
         : null}
     </div>
   )
@@ -149,15 +149,15 @@ function TrendBars({ data }: { data: readonly TurnUsage[] }): JSX.Element {
   const max = Math.max(1, ...data.map(item => item.input + item.output))
   const width = data.length * 10 - 4
   return (
-    <svg className="dshboard-chart" viewBox={`0 0 ${width} 36`} width="100%" height={36} aria-hidden>
+    <svg className="dsh-board-chart" viewBox={`0 0 ${width} 36`} width="100%" height={36} aria-hidden>
       {data.map((item, index) => {
         const inH = Math.max(0, Math.round(item.input / max * 34))
         const outH = Math.max(0, Math.round(item.output / max * 34))
         const x = index * 10
         return (
           <g key={item.turn}>
-            <rect className="dshboard-bar-in" x={x} y={36 - inH} width={6} height={inH} rx={2} />
-            <rect className="dshboard-bar-out" x={x} y={36 - inH - outH} width={6} height={outH} rx={2} />
+            <rect className="dsh-board-bar-in" x={x} y={36 - inH} width={6} height={inH} rx={2} />
+            <rect className="dsh-board-bar-out" x={x} y={36 - inH - outH} width={6} height={outH} rx={2} />
             <title>{`第 ${item.turn} 轮 · 入 ${item.input} · 出 ${item.output}`}</title>
           </g>
         )
@@ -176,15 +176,15 @@ function CumulativeArea({ values }: { values: readonly number[] }): JSX.Element 
   const points = values.map((v, i) => `${(i * step).toFixed(1)},${(h - 3 - (v / max) * (h - 8)).toFixed(1)}`)
   const area = `M 0,${h} L ${points.join(' L ')} L ${(n - 1) * step},${h} Z`
   return (
-    <svg className="dshboard-chart" viewBox={`0 0 ${w} ${h}`} width="100%" height={h} aria-hidden>
+    <svg className="dsh-board-chart" viewBox={`0 0 ${w} ${h}`} width="100%" height={h} aria-hidden>
       <defs>
-        <linearGradient id="dshboard-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" className="dshboard-area-top" />
-          <stop offset="100%" className="dshboard-area-bottom" />
+        <linearGradient id="dsh-board-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" className="dsh-board-area-top" />
+          <stop offset="100%" className="dsh-board-area-bottom" />
         </linearGradient>
       </defs>
-      <path d={area} fill="url(#dshboard-area)" />
-      <polyline points={points.join(' ')} className="dshboard-line" fill="none" />
+      <path d={area} fill="url(#dsh-board-area)" />
+      <polyline points={points.join(' ')} className="dsh-board-line" fill="none" />
     </svg>
   )
 }
@@ -195,15 +195,15 @@ function ModelRows({ models, t }: {
 }): JSX.Element {
   const max = Math.max(1, ...models.map(item => item.output))
   return (
-    <div className="dshboard-models">
+    <div className="dsh-board-models">
       {models.map(item => (
-        <div className="dshboard-model" key={item.model}>
-          <div className="dshboard-model-head">
-            <span className="dshboard-model-name" title={item.model}>{item.model}</span>
-            <span className="dshboard-model-value">{t('model.value', { out: formatTokens(item.output), in: formatTokens(item.input) })}</span>
+        <div className="dsh-board-model" key={item.model}>
+          <div className="dsh-board-model-head">
+            <span className="dsh-board-model-name" title={item.model}>{item.model}</span>
+            <span className="dsh-board-model-value">{t('model.value', { out: formatTokens(item.output), in: formatTokens(item.input) })}</span>
           </div>
-          <div className="dshboard-model-bar">
-            <div className="dshboard-model-fill" style={{ width: `${item.output / max * 100}%` }} />
+          <div className="dsh-board-model-bar">
+            <div className="dsh-board-model-fill" style={{ width: `${item.output / max * 100}%` }} />
           </div>
         </div>
       ))}
@@ -225,7 +225,7 @@ function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] 
   const width = weeks * (cell + gap) - gap
   const height = rows * (cell + gap) - gap
   return (
-    <svg className="dshboard-heatmap" viewBox={`0 0 ${width} ${height}`} width={width} height={height} aria-hidden>
+    <svg className="dsh-board-heatmap" viewBox={`0 0 ${width} ${height}`} width={width} height={height} aria-hidden>
       {Array.from({ length: weeks * rows }, (_, i) => {
         const day = start + i * 86_400_000
         const tokens = byDay.get(day) ?? 0
@@ -233,7 +233,7 @@ function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] 
         const x = Math.floor(i / rows) * (cell + gap)
         const y = (i % rows) * (cell + gap)
         return (
-          <rect key={day} className={`dshboard-heat-l${level}`} x={x} y={y} width={cell} height={cell} rx={2}>
+          <rect key={day} className={`dsh-board-heat-l${level}`} x={x} y={y} width={cell} height={cell} rx={2}>
             <title>{`${new Date(day).toLocaleDateString()} · ${tokens} token`}</title>
           </rect>
         )
@@ -247,15 +247,15 @@ function SessionRows({ sessions }: {
 }): JSX.Element {
   const max = Math.max(1, ...sessions.map(item => item.tokens))
   return (
-    <div className="dshboard-sessions">
+    <div className="dsh-board-sessions">
       {sessions.map(item => (
-        <div className="dshboard-session" key={item.id}>
-          <div className="dshboard-session-head">
-            <span className="dshboard-session-title" title={item.title}>{item.title}</span>
-            <span className="dshboard-session-value">{formatTokens(item.tokens)}</span>
+        <div className="dsh-board-session" key={item.id}>
+          <div className="dsh-board-session-head">
+            <span className="dsh-board-session-title" title={item.title}>{item.title}</span>
+            <span className="dsh-board-session-value">{formatTokens(item.tokens)}</span>
           </div>
-          <div className="dshboard-session-bar">
-            <div className="dshboard-session-fill" style={{ width: `${item.tokens / max * 100}%` }} />
+          <div className="dsh-board-session-bar">
+            <div className="dsh-board-session-fill" style={{ width: `${item.tokens / max * 100}%` }} />
           </div>
         </div>
       ))}
@@ -289,7 +289,7 @@ function MembershipCard({ total, daily, t }: {
     : Math.ceil((next.floor - total) / Math.max(1, avgPerDay))
 
   // Level-up celebration: persisted last level, flash once on promotion.
-  const LEVEL_KEY = 'dshboard.level'
+  const LEVEL_KEY = 'dsh-board.level'
   const lastIndexRef = useRef(-1)
   const [celebrating, setCelebrating] = useState(false)
   useEffect(() => {
@@ -313,40 +313,40 @@ function MembershipCard({ total, daily, t }: {
   }, [index])
 
   return (
-    <div className={celebrating ? 'dshboard-card dshboard-levelup' : 'dshboard-card'}>
-      <div className="dshboard-card-head">
+    <div className={celebrating ? 'dsh-board-card dsh-board-levelup' : 'dsh-board-card'}>
+      <div className="dsh-board-card-head">
         <span>{t('rank.title')}</span>
-        <span className="dshboard-card-lv">{t('rank.lv', { n: index + 1 })}</span>
+        <span className="dsh-board-card-lv">{t('rank.lv', { n: index + 1 })}</span>
       </div>
-      <div className="dshboard-card-body">
+      <div className="dsh-board-card-body">
         {prev === null
-          ? <div className="dshboard-card-step dshboard-card-prev-empty" />
+          ? <div className="dsh-board-card-step dsh-board-card-prev-empty" />
           : (
-            <div className="dshboard-card-step dshboard-card-prev" title={t(`rank.${index - 1}` as RichKey)}>
-              <span className="dshboard-card-step-emoji">{prev.emoji}</span>
-              <span className="dshboard-card-step-name">{t(`rank.${index - 1}` as RichKey)}</span>
-              <span className="dshboard-card-step-status">✓ {t('rank.unlocked')}</span>
+            <div className="dsh-board-card-step dsh-board-card-prev" title={t(`rank.${index - 1}` as RichKey)}>
+              <span className="dsh-board-card-step-emoji">{prev.emoji}</span>
+              <span className="dsh-board-card-step-name">{t(`rank.${index - 1}` as RichKey)}</span>
+              <span className="dsh-board-card-step-status">✓ {t('rank.unlocked')}</span>
             </div>
           )}
-        <div className="dshboard-card-current">
-          <span className="dshboard-card-current-emoji">{rank.level.emoji}</span>
-          <span className="dshboard-card-current-name">{t(`rank.${index}` as RichKey)}</span>
-          <span className="dshboard-card-current-tag">{t('rank.current')}</span>
+        <div className="dsh-board-card-current">
+          <span className="dsh-board-card-current-emoji">{rank.level.emoji}</span>
+          <span className="dsh-board-card-current-name">{t(`rank.${index}` as RichKey)}</span>
+          <span className="dsh-board-card-current-tag">{t('rank.current')}</span>
         </div>
         {next === null
-          ? <div className="dshboard-card-step dshboard-card-max">👑 MAX</div>
+          ? <div className="dsh-board-card-step dsh-board-card-max">👑 MAX</div>
           : (
-            <div className="dshboard-card-step dshboard-card-next" title={t(`rank.${index + 1}` as RichKey)}>
-              <span className="dshboard-card-step-emoji">{next.emoji}</span>
-              <span className="dshboard-card-step-name">{t(`rank.${index + 1}` as RichKey)}</span>
-              <span className="dshboard-card-step-status">🔒 {t('rank.locked')}</span>
+            <div className="dsh-board-card-step dsh-board-card-next" title={t(`rank.${index + 1}` as RichKey)}>
+              <span className="dsh-board-card-step-emoji">{next.emoji}</span>
+              <span className="dsh-board-card-step-name">{t(`rank.${index + 1}` as RichKey)}</span>
+              <span className="dsh-board-card-step-status">🔒 {t('rank.locked')}</span>
             </div>
           )}
       </div>
-      <div className="dshboard-card-bar">
-        <div className="dshboard-card-bar-fill" style={{ width: `${Math.min(100, progress * 100)}%` }} />
+      <div className="dsh-board-card-bar">
+        <div className="dsh-board-card-bar-fill" style={{ width: `${Math.min(100, progress * 100)}%` }} />
       </div>
-      <div className="dshboard-card-next-line">
+      <div className="dsh-board-card-next-line">
         {next === null
           ? t('rank.max')
           : `${t('rank.next', {
@@ -356,34 +356,34 @@ function MembershipCard({ total, daily, t }: {
       </div>
       {next !== null && daysToNext !== null
         ? (
-          <div className="dshboard-card-eta">
+          <div className="dsh-board-card-eta">
             {daysToNext < 1 ? t('rank.eta.today') : t('rank.eta', { days: daysToNext })}
           </div>
         )
         : null}
-      <div className="dshboard-card-perks">
-        <div className="dshboard-card-perk">
-          <span className="dshboard-card-perk-label">✦ {t('rank.perk.current')}</span>
-          <span className="dshboard-card-perk-value">{t(`perk.${index}` as RichKey)}</span>
+      <div className="dsh-board-card-perks">
+        <div className="dsh-board-card-perk">
+          <span className="dsh-board-card-perk-label">✦ {t('rank.perk.current')}</span>
+          <span className="dsh-board-card-perk-value">{t(`perk.${index}` as RichKey)}</span>
         </div>
         {next === null
           ? null
           : (
-            <div className="dshboard-card-perk dshboard-card-perk-locked">
-              <span className="dshboard-card-perk-label">🔒 {t('rank.perk.next')}</span>
-              <span className="dshboard-card-perk-value">{t(`perk.${index + 1}` as RichKey)}</span>
+            <div className="dsh-board-card-perk dsh-board-card-perk-locked">
+              <span className="dsh-board-card-perk-label">🔒 {t('rank.perk.next')}</span>
+              <span className="dsh-board-card-perk-value">{t(`perk.${index + 1}` as RichKey)}</span>
             </div>
           )}
       </div>
-      <div className="dshboard-card-ladder">
+      <div className="dsh-board-card-ladder">
         {LEVELS.map((level, i) => (
           <span
             key={level.floor}
             className={[
-              'dshboard-card-rung',
-              i < index ? 'dshboard-card-rung-done' : '',
-              i === index ? 'dshboard-card-rung-now' : '',
-              i > index ? 'dshboard-card-rung-locked' : '',
+              'dsh-board-card-rung',
+              i < index ? 'dsh-board-card-rung-done' : '',
+              i === index ? 'dsh-board-card-rung-now' : '',
+              i > index ? 'dsh-board-card-rung-locked' : '',
             ].filter(Boolean).join(' ')}
             title={`LV.${i + 1} ${level.zh}`}
           >
@@ -400,7 +400,7 @@ function Achievements({ stats, t }: {
   t: PropsLocale<typeof NS>['t']
 }): JSX.Element {
   return (
-    <div className="dshboard-achievements">
+    <div className="dsh-board-achievements">
       {ACHIEVEMENTS.map(achievement => {
         const got = achievement.test(stats)
         const nameKey = `ach.${achievement.id}` as RichKey
@@ -408,11 +408,11 @@ function Achievements({ stats, t }: {
         return (
           <span
             key={achievement.id}
-            className={got ? 'dshboard-ach dshboard-ach-got' : 'dshboard-ach'}
+            className={got ? 'dsh-board-ach dsh-board-ach-got' : 'dsh-board-ach'}
             title={got ? t(nameKey) : `${t(nameKey)} · ${t(condKey)}`}
           >
-            <span className="dshboard-ach-emoji">{achievement.emoji}</span>
-            <span className="dshboard-ach-name">{t(nameKey)}</span>
+            <span className="dsh-board-ach-emoji">{achievement.emoji}</span>
+            <span className="dsh-board-ach-name">{t(nameKey)}</span>
           </span>
         )
       })}
@@ -564,16 +564,16 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   }
 
   const panel = (
-    <div className="dshboard-panel">
-      <div className="dshboard-panel-title">
+    <div className="dsh-board-panel">
+      <div className="dsh-board-panel-title">
         <span>{t('panel.title')}</span>
-        <span className="dshboard-title-right">
+        <span className="dsh-board-title-right">
           {running
-            ? <span className="dshboard-live"><StateDot state="ongoing" className="dshboard-dot" />{t('live')}</span>
+            ? <span className="dsh-board-live"><StateDot state="ongoing" className="dsh-board-dot" />{t('live')}</span>
             : null}
           <button
             type="button"
-            className="dshboard-close"
+            className="dsh-board-close"
             aria-label={t('panel.collapse.aria')}
             onClick={() => { if (wide) setCollapsed(true); else setOpen(false) }}
           >
@@ -581,11 +581,11 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           </button>
         </span>
       </div>
-      <div className="dshboard-hero">
-        <div className="dshboard-hero-value">{formatTokens(hero)}</div>
-        <div className="dshboard-hero-label">{t('global.tokens')}</div>
+      <div className="dsh-board-hero">
+        <div className="dsh-board-hero-value">{formatTokens(hero)}</div>
+        <div className="dsh-board-hero-label">{t('global.tokens')}</div>
       </div>
-      <div className="dshboard-hero-sub">
+      <div className="dsh-board-hero-sub">
         {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('hero.cache', { percent: lifetime.input === 0 ? 0 : Math.round(lifetime.hit / lifetime.input * 100) })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
       <ContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
@@ -595,9 +595,9 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           <>
             <SectionTitle>{t('sec.trend')}</SectionTitle>
             <TrendBars data={fold.perTurn.slice(-24)} />
-            <div className="dshboard-legend">
-              <span><i className="dshboard-legend-in" />{t('legend.in')}</span>
-              <span><i className="dshboard-legend-out" />{t('legend.out')}</span>
+            <div className="dsh-board-legend">
+              <span><i className="dsh-board-legend-in" />{t('legend.in')}</span>
+              <span><i className="dsh-board-legend-out" />{t('legend.out')}</span>
             </div>
           </>
         )}
@@ -615,7 +615,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           <>
             <SectionTitle>{t('sec.heat')}</SectionTitle>
             <Heatmap daily={lifetime.daily} />
-            <div className="dshboard-heat-note">{t('heat.note')}</div>
+            <div className="dsh-board-heat-note">{t('heat.note')}</div>
           </>
         )}
       <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
@@ -637,17 +637,17 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <SessionRows sessions={lifetime.sessions} />
           </>
         )}
-      <div className="dshboard-note">
+      <div className="dsh-board-note">
         {t('note.pricing')} · {isPeakHour() ? t('window.peak') : t('window.offpeak')}
       </div>
     </div>
   )
 
   return (
-    <div ref={rootRef} className="dshboard-foot">
+    <div ref={rootRef} className="dsh-board-foot">
       <button
         type="button"
-        className={wide ? 'dshboard-trigger' : 'dshboard-trigger dshboard-orb'}
+        className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
         aria-expanded={wide ? !collapsed : open}
         title={rankName}
         onClick={toggle}
@@ -655,21 +655,21 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         {wide
           ? (
             <>
-              <span className={flash ? 'dshboard-badge dshboard-flash' : 'dshboard-badge'}>
-                <span className="dshboard-tag" style={{ background: rank.level.color }}>{rankName}</span>
-                <span className="dshboard-badge-tokens">{formatTokens(lifetime.total)}</span>
-                <span className="dshboard-badge-cost">{formatCost(lifetime.cost)}</span>
+              <span className={flash ? 'dsh-board-badge dsh-board-flash' : 'dsh-board-badge'}>
+                <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
+                <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)}</span>
+                <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
               </span>
-              {running ? <StateDot state="ongoing" className="dshboard-live-dot" /> : null}
-              <span className="dshboard-chevron">{collapsed ? '▸' : '▾'}</span>
+              {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
+              <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
             </>
           )
-          : <span className="dshboard-orb-emoji">{rank.level.emoji}</span>}
+          : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>}
       </button>
       {wide
-        ? (collapsed ? null : <div className="dshboard-inline">{panel}</div>)
+        ? (collapsed ? null : <div className="dsh-board-inline">{panel}</div>)
         : open
-          ? <div className="dshboard-float">{panel}</div>
+          ? <div className="dsh-board-float">{panel}</div>
           : null}
     </div>
   )

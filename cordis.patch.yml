@@ -1,9 +1,9 @@
-# dshboard bundle layer.
+# dsh-board bundle layer.
 #
 # One dual-face row: the host Loader governs the (near-empty) node half, and
 # the web plugin registry discovers this package's `dsh.client` declaration
-# from package.json, serving the built browser bundle under /plugins/dshboard.
+# from package.json, serving the built browser bundle under /plugins/dsh-board.
 
 - insert:
     - id: board
-      name: dshboard
+      name: dsh-board

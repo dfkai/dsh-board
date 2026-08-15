@@ -1,4 +1,4 @@
-"""Headless visual check of the dshboard sidebar usage entry (3081).
+"""Headless visual check of the dsh-board sidebar usage entry (3081).
 
 Dev-only: python3 test/e2e.py
 Requires: python3 -m playwright install chromium
@@ -16,21 +16,21 @@ with sync_playwright() as p:
     page.goto(URL, wait_until='domcontentloaded')
     # The app keeps SSE/WebSocket channels open, so networkidle never fires.
     page.wait_for_timeout(8000)
-    triggers = page.locator('.dshboard-trigger').count()
+    triggers = page.locator('.dsh-board-trigger').count()
     print(f'triggers: {triggers}')
     # Wide mode: the inline panel is expanded by default (no click needed).
-    panel = page.locator('.dshboard-inline .dshboard-panel')
+    panel = page.locator('.dsh-board-inline .dsh-board-panel')
     print(f'inline panel (default open): {panel.count()}')
     if panel.count() > 0:
         print('--- panel text (head) ---')
         print('\n'.join(panel.first.inner_text().splitlines()[:10]))
     # Trigger toggles collapse in wide mode.
-    page.locator('.dshboard-trigger').first.click()
+    page.locator('.dsh-board-trigger').first.click()
     page.wait_for_timeout(500)
     print(f'after trigger click (collapsed): {panel.count()}')
     print('--- console errors ---')
     for line in errors[:12]:
         print(line)
-    page.screenshot(path='/tmp/dshboard-3081.png', full_page=False)
-    print('screenshot: /tmp/dshboard-3081.png')
+    page.screenshot(path='/tmp/dsh-board-3081.png', full_page=False)
+    print('screenshot: /tmp/dsh-board-3081.png')
     browser.close()

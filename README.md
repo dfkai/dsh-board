@@ -1,4 +1,4 @@
-# dshboard
+# dsh-board
 
 给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在**左侧 sidebar 脚部**（Settings 旁）加一个「⚡ 用量」统计台——对齐 DeepSeek 后台使用统计，把官方 UI 没有的统计感、实时感、游戏感放进你的 web：
 
@@ -22,16 +22,16 @@
 
 ```sh
 pnpm pack
-dsh plugin --profile webtest add ./dshboard-0.1.0.tgz
+dsh plugin --profile webtest add ./dsh-board-0.1.0.tgz
 ```
 
 发布后：
 
 ```sh
-dsh plugin --profile webtest add github:dfkai/dshboard
+dsh plugin --profile webtest add github:dfkai/dsh-board
 ```
 
-装完 `dsh --profile webtest --dump-config` 应出现 `# == dshboard` 层；重启 profile 后打开页面即可看到监控带。
+装完 `dsh --profile webtest --dump-config` 应出现 `# == dsh-board` 层；重启 profile 后打开页面即可看到监控带。
 
 ## 开发循环
 
