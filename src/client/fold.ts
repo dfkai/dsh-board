@@ -38,7 +38,7 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
       data?: {
         turn?: number
         header?: { config?: { model?: string } }
-        chunk?: { type?: string; usage?: { inputTokens?: number; outputTokens?: number; cacheReadTokens?: number } }
+        chunk?: { type?: string; usage?: { inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; reasoningTokens?: number } }
       }
     }
     if (event?.type === 'request/header') {
@@ -52,7 +52,9 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
     const turn = event.data?.turn
     if (turn === undefined) continue
     const input = chunk.usage?.inputTokens ?? 0
-    const output = chunk.usage?.outputTokens ?? 0
+    // DeepSeek bills reasoning tokens at the OUTPUT rate; the wire reports
+    // them separately from completion_tokens, so fold them back in.
+    const output = (chunk.usage?.outputTokens ?? 0) + (chunk.usage?.reasoningTokens ?? 0)
     const cacheRead = chunk.usage?.cacheReadTokens ?? 0
 
     const row = perTurn.get(turn) ?? { turn, input: 0, output: 0, cacheRead: 0 }
