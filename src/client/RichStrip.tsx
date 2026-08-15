@@ -105,6 +105,21 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
   const children = subs.entries.filter(entry => entry.kind === 'child')
   const runningSubs = children.filter(entry => entry.activity === 'running')
 
+  // A session with no activity yet collapses to one slim placeholder line;
+  // the full grid appears with the first real datum.
+  const hasActivity = occupancy !== null
+    || showTokens
+    || (stats !== undefined && stats.steps > 0)
+    || jobs.length > 0
+    || children.length > 0
+  if (!hasActivity) {
+    return (
+      <div className="dsh-rich-strip dsh-rich-empty" data-dsh-rich-session={sessionId}>
+        <span className="dsh-rich-empty-text">dsh-rich · 等待会话活动（token / 任务 / 子代理出现后展开）</span>
+      </div>
+    )
+  }
+
   return (
     <div className="dsh-rich-strip" data-dsh-rich-session={sessionId}>
       <div className="dsh-rich-cells">
@@ -128,7 +143,11 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
         />
         <Cell
           label="子代理"
-          value={children.length === 0 ? '无' : `${runningSubs.length} / ${children.length} 运行中`}
+          value={children.length === 0
+            ? '无'
+            : runningSubs.length > 0
+              ? `${runningSubs.length} / ${children.length} 运行中`
+              : `${children.length} 个空闲`}
           sub={runningSubs[0]?.label === undefined ? undefined : truncate(runningSubs[0].label, 36)}
           accent={runningSubs.length > 0 ? '#7c5cff' : undefined}
         />

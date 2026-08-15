@@ -51,6 +51,14 @@ const CSS = `
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.dsh-rich-empty {
+  padding: 4px 12px;
+}
+.dsh-rich-empty-text {
+  color: #8b87a8;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
 .dsh-rich-bar {
   height: 4px;
   margin-top: 5px;
