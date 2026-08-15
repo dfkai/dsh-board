@@ -195,6 +195,83 @@ function SessionRows({ sessions }: {
 }
 
 /**
+ * VIP-style membership card: previous tier (unlocked) → current tier
+ * (glowing, tier-colored) → next tier (locked), a flowing progress bar, and
+ * the full ten-rung ladder with passed/current/future states.
+ */
+function MembershipCard({ total, t }: {
+  total: number
+  t: PropsLocale<typeof NS>['t']
+}): JSX.Element {
+  const rank = rankFor(total)
+  const index = LEVELS.indexOf(rank.level)
+  const prev = index > 0 ? LEVELS[index - 1] : null
+  const next = rank.next
+  const progress = next === null ? 1 : (total - rank.level.floor) / (next.floor - rank.level.floor)
+  return (
+    <div className="dsh-rich-card" style={{ '--tier': rank.level.color } as never}>
+      <div className="dsh-rich-card-head">
+        <span>🏆 {t('rank.title')}</span>
+        <span className="dsh-rich-card-lv">{t('rank.lv', { n: index + 1 })}</span>
+      </div>
+      <div className="dsh-rich-card-body">
+        {prev === null
+          ? <div className="dsh-rich-card-step dsh-rich-card-prev-empty" />
+          : (
+            <div className="dsh-rich-card-step dsh-rich-card-prev" title={t(`rank.${index - 1}` as RichKey)}>
+              <span className="dsh-rich-card-step-emoji">{prev.emoji}</span>
+              <span className="dsh-rich-card-step-name">{t(`rank.${index - 1}` as RichKey)}</span>
+              <span className="dsh-rich-card-step-status">✓ {t('rank.unlocked')}</span>
+            </div>
+          )}
+        <div className="dsh-rich-card-current">
+          <span className="dsh-rich-card-current-emoji">{rank.level.emoji}</span>
+          <span className="dsh-rich-card-current-name">{t(`rank.${index}` as RichKey)}</span>
+          <span className="dsh-rich-card-current-tag">{t('rank.current')}</span>
+        </div>
+        {next === null
+          ? <div className="dsh-rich-card-step dsh-rich-card-max">👑 MAX</div>
+          : (
+            <div className="dsh-rich-card-step dsh-rich-card-next" title={t(`rank.${index + 1}` as RichKey)}>
+              <span className="dsh-rich-card-step-emoji">{next.emoji}</span>
+              <span className="dsh-rich-card-step-name">{t(`rank.${index + 1}` as RichKey)}</span>
+              <span className="dsh-rich-card-step-status">🔒 {t('rank.locked')}</span>
+            </div>
+          )}
+      </div>
+      <div className="dsh-rich-card-bar">
+        <div className="dsh-rich-card-bar-fill" style={{ width: `${Math.min(100, progress * 100)}%` }} />
+      </div>
+      <div className="dsh-rich-card-next-line">
+        {next === null
+          ? t('rank.max')
+          : t('rank.next', {
+            name: t(`rank.${index + 1}` as RichKey),
+            count: formatTokens(next.floor - total),
+          })}
+      </div>
+      <div className="dsh-rich-card-ladder">
+        {LEVELS.map((level, i) => (
+          <span
+            key={level.floor}
+            className={[
+              'dsh-rich-card-rung',
+              i < index ? 'dsh-rich-card-rung-done' : '',
+              i === index ? 'dsh-rich-card-rung-now' : '',
+              i > index ? 'dsh-rich-card-rung-locked' : '',
+            ].filter(Boolean).join(' ')}
+            title={`LV.${i + 1} ${level.zh}`}
+            style={i <= index ? { '--tier': level.color } as never : undefined}
+          >
+            {level.emoji}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
  * Sidebar foot entry: a live usage console next to Settings. Wide sidebar:
  * inline panel, expanded by default, collapsible (persisted). Rail: icon +
  * floating popup. Data: current-session projections from the session-list
@@ -297,17 +374,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
 
   const hero = useCountUp(lifetime.total)
   const rank = rankFor(lifetime.total)
-  const rankKey = `rank.${LEVELS.indexOf(rank.level)}` as RichKey
-  const rankName = t(rankKey)
-  const rankProgress = rank.next === null
-    ? 1
-    : (lifetime.total - rank.level.floor) / (rank.next.floor - rank.level.floor)
-  const rankSub = rank.next === null
-    ? t('rank.max')
-    : t('rank.next', {
-      name: t(`rank.${LEVELS.indexOf(rank.next)}` as RichKey),
-      count: formatTokens(rank.next.floor - lifetime.total),
-    })
+  const rankName = t(`rank.${LEVELS.indexOf(rank.level)}` as RichKey)
 
   const toggle = (): void => {
     if (wide) {
@@ -337,17 +404,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           </button>
         </span>
       </div>
-      <SectionTitle emoji="🏆">{t('rank.title')}</SectionTitle>
-      <div className="dsh-rich-rank">
-        <span className="dsh-rich-rank-emoji">{rank.level.emoji}</span>
-        <div className="dsh-rich-rank-body">
-          <div className="dsh-rich-rank-name">{rankName}</div>
-          <div className="dsh-rich-rank-bar">
-            <div className="dsh-rich-rank-fill" style={{ width: `${Math.min(100, rankProgress * 100)}%` }} />
-          </div>
-          <div className="dsh-rich-rank-next">{rankSub}</div>
-        </div>
-      </div>
+      <MembershipCard total={lifetime.total} t={t} />
       <div className="dsh-rich-hero">
         <div className="dsh-rich-hero-value">{formatTokens(hero)}</div>
         <div className="dsh-rich-hero-label">{t('global.tokens')}</div>

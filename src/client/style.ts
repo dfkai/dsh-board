@@ -240,6 +240,160 @@ const CSS = `
   font-size: 10.5px;
   color: var(--dsw-alias-label-secondary, #8f8ba8);
 }
+/* VIP membership card: prev → current → next tier + ladder strip. */
+.dsh-rich-card {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--tier, #7c5cff) 55%, transparent);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--tier, #7c5cff) 12%, transparent), transparent 60%),
+    color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.04)) 60%, transparent);
+}
+.dsh-rich-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+.dsh-rich-card-lv {
+  font-weight: 700;
+  color: var(--tier, #7c5cff);
+}
+.dsh-rich-card-body {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 6px;
+}
+.dsh-rich-card-step {
+  text-align: center;
+  padding: 6px 4px;
+  border-radius: 8px;
+  font-size: 10.5px;
+  min-width: 0;
+}
+.dsh-rich-card-prev {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.05)) 60%, transparent);
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+}
+.dsh-rich-card-prev-empty {
+  min-height: 1px;
+}
+.dsh-rich-card-next {
+  border: 1px dashed color-mix(in srgb, var(--dsw-alias-border-l1, rgba(127, 127, 255, 0.25)) 70%, transparent);
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+}
+.dsh-rich-card-max {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--tier, #7c5cff);
+}
+.dsh-rich-card-step-emoji {
+  display: block;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.dsh-rich-card-next .dsh-rich-card-step-emoji {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+.dsh-rich-card-step-name {
+  display: block;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dsh-rich-card-step-status {
+  display: block;
+  font-size: 9.5px;
+  opacity: 0.8;
+}
+.dsh-rich-card-current {
+  text-align: center;
+  padding: 8px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tier, #7c5cff) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier, #7c5cff) 60%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tier, #7c5cff) 35%, transparent);
+}
+.dsh-rich-card-current-emoji {
+  font-size: 22px;
+  display: block;
+  animation: dsh-rich-orb-bounce 2.2s ease-in-out infinite;
+}
+.dsh-rich-card-current-name {
+  display: block;
+  margin-top: 3px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--tier, #7c5cff);
+}
+.dsh-rich-card-current-tag {
+  display: block;
+  margin-top: 1px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+}
+.dsh-rich-card-bar {
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.10)) 85%, transparent);
+  overflow: hidden;
+}
+.dsh-rich-card-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tier, #7c5cff), color-mix(in srgb, var(--tier, #7c5cff) 55%, #ffffff), var(--tier, #7c5cff));
+  background-size: 200% 100%;
+  animation: dsh-rich-shimmer 2.4s linear infinite;
+  transition: width 400ms ease;
+}
+@keyframes dsh-rich-shimmer {
+  from { background-position: 0% 0; }
+  to { background-position: 200% 0; }
+}
+.dsh-rich-card-next-line {
+  margin-top: 5px;
+  font-size: 10.5px;
+  color: var(--dsw-alias-label-secondary, #8f8ba8);
+}
+.dsh-rich-card-ladder {
+  margin-top: 8px;
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.dsh-rich-card-rung {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.06)) 70%, transparent);
+}
+.dsh-rich-card-rung-done {
+  background: color-mix(in srgb, var(--tier, #7c5cff) 30%, transparent);
+}
+.dsh-rich-card-rung-now {
+  background: color-mix(in srgb, var(--tier, #7c5cff) 25%, transparent);
+  box-shadow: 0 0 0 1.5px var(--tier, #7c5cff);
+  animation: dsh-rich-glow 2.6s ease-in-out infinite;
+}
+.dsh-rich-card-rung-locked {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
 .dsh-rich-hero {
   margin-top: 10px;
   display: flex;
