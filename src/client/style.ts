@@ -120,15 +120,6 @@ const CSS = `
   font-size: 12px;
   line-height: 1.5;
 }
-.dsh-board-inline .dsh-board-panel {
-  width: auto;
-  margin-top: 6px;
-  box-shadow: none;
-  border: none;
-  padding: 10px 0;
-  max-height: min(60vh, 560px);
-  overflow-y: auto;
-}
 .dsh-board-panel::-webkit-scrollbar {
   width: 6px;
 }
@@ -144,6 +135,12 @@ const CSS = `
   bottom: calc(100% + 8px);
   left: 0;
   z-index: 60;
+}
+/* Wide sidebar: fill the column width and cap the rise so the session
+   list above stays visible; the rest scrolls inside the panel. */
+.dsh-board-wide .dsh-board-float .dsh-board-panel {
+  width: 100%;
+  max-height: min(52vh, 400px);
 }
 .dsh-board-panel-title {
   display: flex;

@@ -375,8 +375,8 @@ function Achievements({ stats, t }: {
 
 /**
  * Sidebar foot entry: a live usage console next to Settings. Wide sidebar:
- * inline panel, expanded by default, collapsible (persisted). Rail: icon +
- * floating popup. Data: current-session projections from the session-list
+ * panel floats upward above the badge (height-capped, scrolls internally),
+ * expanded by default, collapsible (persisted). Rail: icon + popup. Data: current-session projections from the session-list
  * store, per-turn/per-model series folded from the history RPC, and a
  * lifetime aggregate across every session row.
  */
@@ -411,32 +411,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const [fold, setFold] = useState<HistoryFold>({ perTurn: [], perModel: new Map(), cumulative: [] })
   const rootRef = useRef<HTMLDivElement | null>(null)
-  const triggerRef = useRef<HTMLButtonElement | null>(null)
-  const panelRef = useRef<HTMLDivElement | null>(null)
-  const [floatPos, setFloatPos] = useState<{ left: number; top: number } | null>(null)
   const panelVisible = wide ? !collapsed : open
-
-  // Wide-mode panel escapes the sidebar's overflow clipping via position:fixed,
-  // anchored beside the badge at viewport coordinates.
-  useEffect(() => {
-    if (!panelVisible || !wide) {
-      setFloatPos(null)
-      return
-    }
-    const measure = (): void => {
-      const tr = triggerRef.current?.getBoundingClientRect()
-      const panelEl = panelRef.current
-      if (tr === undefined || panelEl === null) return
-      const pw = panelEl.offsetWidth
-      const ph = panelEl.offsetHeight
-      const left = Math.min(tr.right + 8, window.innerWidth - pw - 8)
-      const top = Math.max(8, Math.min(tr.bottom - ph, window.innerHeight - ph - 8))
-      setFloatPos({ left, top })
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [panelVisible, wide])
 
   useEffect(() => {
     if (current === undefined || !panelVisible) return
@@ -642,9 +617,8 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   )
 
   return (
-    <div ref={rootRef} className="dsh-board-foot">
+    <div ref={rootRef} className={wide ? 'dsh-board-foot dsh-board-wide' : 'dsh-board-foot'}>
       <button
-        ref={triggerRef}
         type="button"
         className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
         style={{ '--tier': rank.level.color } as never}
@@ -669,23 +643,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
           )
           : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>}
       </button>
-      {wide
-        ? (collapsed
-          ? null
-          : (
-            <div
-              ref={panelRef}
-              className="dsh-board-float-wide"
-              style={floatPos === null
-                ? undefined
-                : { position: 'fixed', left: floatPos.left, top: floatPos.top, zIndex: 60 } as never}
-            >
-              {panel}
-            </div>
-          ))
-        : open
-          ? <div className="dsh-board-float">{panel}</div>
-          : null}
+      {panelVisible ? <div className="dsh-board-float">{panel}</div> : null}
     </div>
   )
 })
