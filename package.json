@@ -1,0 +1,60 @@
+{
+  "name": "dsh-rich",
+  "version": "0.1.0",
+  "description": "dsh client panel bundle: a live AI-styled monitor strip above the composer — token usage, context occupancy, turn/step timing.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/client.js.map",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "panel",
+    "monitor",
+    "tokens",
+    "ui"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dfkai/dsh-rich.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "prepare": "tsdown"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2"
+  }
+}
