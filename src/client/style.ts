@@ -11,14 +11,15 @@ const CSS = `
   position: relative;
 }
 
-/* Trigger: a near-square stat tile. */
+/* Trigger: a square stat tile spanning the sidebar menu width. */
 .dshboard-trigger {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px 12px;
-  min-width: 100px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 14px;
   border-radius: 14px;
   border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
   background: var(--dsw-alias-bg-layer-1, #ffffff);
@@ -36,26 +37,26 @@ const CSS = `
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 /* Rank title: a tier-colored pill tag with white text. */
 .dshboard-tag {
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 999px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
 }
 .dshboard-badge-tokens {
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--dsw-alias-label-primary, #1a1a1a);
   line-height: 1.2;
 }
 .dshboard-badge-cost {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--dsw-alias-brand-primary, #4d6bfe);
 }

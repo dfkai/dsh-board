@@ -481,6 +481,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     let input = 0
     let output = 0
     let cost = 0
+    let hit = 0
     const sessions: { id: string; title: string; tokens: number }[] = []
     const daily = new Map<number, number>()
     for (const id of ids) {
@@ -491,6 +492,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       const o = u.outputTokens
       input += i
       output += o
+      hit += u.cacheReadTokens
       cost += estimateCost(u)
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
       if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
@@ -503,6 +505,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       input,
       output,
       cost,
+      hit,
       total: input + output,
       sessions: sessions.slice(0, 8),
       daily: [...daily.entries()].map(([day, tokens]) => ({ day, tokens })),
@@ -583,7 +586,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         <div className="dshboard-hero-label">{t('global.tokens')}</div>
       </div>
       <div className="dshboard-hero-sub">
-        {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
+        {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('hero.cache', { percent: lifetime.input === 0 ? 0 : Math.round(lifetime.hit / lifetime.input * 100) })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
       <ContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
       {fold.perTurn.length === 0
