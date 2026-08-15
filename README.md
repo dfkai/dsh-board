@@ -1,68 +1,76 @@
 # dsh-board
 
-给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在**左侧 sidebar 脚部**（Settings 旁）加一个「⚡ 用量」统计台——对齐 DeepSeek 后台使用统计，把官方 UI 没有的统计感、实时感、游戏感放进你的 web：
+给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 **侧栏用量面板**：把 DeepSeek 后台的用量统计装进你的 Web UI 左下角。
 
-- **🏆 中二段位**——跨会话累计 token 计算段位（🐣 词芽未醒 → 🥉 打字机学徒 → … → 🐲 百亿言灵龙 → 🌌 千亿创世者，9 级），带升级进度条和「距下一级还差 X token」；
-- **亿级刺激数字**——渐变 hero 大字滚动计数（万/亿 单位），「跨 N 个会话 · 总成本 ¥X」；
-- **💰 本会话计费**——token 投影 × 价格表（[`pricing.ts`](./src/client/pricing.ts)，默认 deepseek-chat 公开价，纯估算），输入（含缓存命中率）/ 输出 / 合计 / 成本；
-- **🧮 分模型统计**——`session.history` 折叠 `request/header` + usage 事件，每个模型的输入/输出与占比条；
-- **📈 每轮走势**（输入/输出堆叠柱）+ **📉 累计输出曲线**（渐变面积图）；
-- **📅 每日热力图**——GitHub 风格 12 周 × 7 天 token 格子，哪天用了多少一眼可见；
-- **🌌 全局会话榜**——所有会话的 token 排名条形图；
-- **实时感**——运行中显示 LIVE 徽章 + 呼吸圆点，数字随流式实时跳动；
-- **默认展开、可折叠**——宽栏内联面板（顶部 ✕ 收起按钮，折叠状态本地持久化），窄栏 ⚡ 图标 + 自下而上的浮层（限高不遮对话）。
+- **💰 计费**——官方价目、按模型计价（deepseek-v4-pro / v4-flash / 旧模型），2026-08-17 起按北京时间 **峰谷自动切价**（高峰 9–12、14–18），成本实时跳；
+- **🧠 1M 上下文**——占用 %、剩余预算、以及「谁在吃窗口」（系统/工具/消息构成堆叠条）；
+- **📈 可视化**——每轮输入/输出走势、累计输出曲线、GitHub 风格每日热力图、分模型占比、全局会话榜；
+- **🏆 「词勋」会员段位**——十级谐音梗 ladder（🥉 词徒 → 💰 百万词翁 → 🧲 万词王 → 🎯 亿词小目标 → … → ⚡ 万亿词神），会员卡式展示：上一位/当前/下一位、进度条、预计升级天数、每级权益、升级闪光；
+- **🔥 成瘾机制**——连续打卡天数 + 9 枚数据驱动的成就徽章；
+- **🖼 正方形实时徽章**——收起后侧栏脚部是一块菜单宽的方形徽章：段位色称号标签 + 总 token + 总花费，数字真变化才闪蓝。
 
-零宿主代码、零存储：数据全走公开 seam（session-list store 的 `projectionValues` + `session.history` RPC）。
-
-全部数据来自宿主**已有的会话投影**（`tokenUsage` / `contextPressure` / `sessionStats`）：本插件零宿主逻辑、零 RPC、零存储，浏览器半通过框架的 per-session 投影座读取，挂载在 `conversation.input.dock` slot（composer 上方的整行 list 位，与官方读数共存）。
+全部数据来自宿主公开接口（会话投影 + `session.history` RPC），**零宿主代码、零存储、零外发请求**——本机统计，不上传任何东西。
 
 ## 安装
 
-本地开发（从 tarball 安装；`add .` 的 link 形式解析不到宿主包）：
+```sh
+dsh plugin --profile <你的 profile> add github:dfkai/dsh-board
+```
+
+> 免构建：`lib/` 预构建产物随仓库发布，不需要任何构建授权或工具链。
+> 装完重启该 profile（或新起 `dsh --profile <name>`），在左侧栏底部 Settings 上方即可看到方形徽章。
+
+验证安装：
 
 ```sh
-pnpm pack
-dsh plugin --profile webtest add ./dsh-board-0.1.0.tgz
+dsh --profile <你的 profile> --dump-config   # 应出现 # == dsh-board 层
 ```
 
-发布后：
+## 配置
+
+| 配置 | 位置 | 说明 |
+|---|---|---|
+| 价格表 | [`src/client/pricing.ts`](src/client/pricing.ts) | 官方价目（2026-08-15 抓取，含峰谷表与生效时刻）；改价后重新构建 |
+| 显示语言 | 跟随应用 locale | 中英双语内置 |
+| 折叠状态 | 浏览器 localStorage | 自动记忆 |
+
+本插件**没有需要用户填写的密钥或 webhook**，装上即用。
+
+## 常见问题
+
+**为什么总 token 是亿级？**
+账单口径与 DeepSeek 后台一致：每轮对话都会对上下文前缀按「缓存命中」价计费（¥0.025/M）。1M 窗口的会话聊几十轮就会累计到亿级命中 token——它们单价极低，面板 hero 副行会显示「缓存命中 N%」帮你区分便宜账与真金白银。
+
+**成本准吗？**
+按官方价目估算（默认 deepseek-v4-pro 标准价，8/17 起峰谷自动切换），不是计费凭证；具体金额以 DeepSeek 平台账单为准。
+
+**数据从哪来？会不会外发？**
+全部来自本机 dsh 的公开接口（`session.list` 投影与 `session.history`），插件不发任何网络请求到第三方。
+
+## 开发
 
 ```sh
-dsh plugin --profile webtest add github:dfkai/dsh-board
+pnpm install
+pnpm build                  # 构建 lib/
+pnpm sync -- <profile 目录>  # 同步到已安装副本，HMR 自动热刷
 ```
 
-装完 `dsh --profile webtest --dump-config` 应出现 `# == dsh-board` 层；重启 profile 后打开页面即可看到监控带。
-
-## 开发循环
-
-```
-改 src → pnpm build → pnpm sync -- <profile 目录> → 浏览器热更
-```
-
-宿主侧 HMR 轮询已安装 bundle 的 mtime，`sync` 把新构建的 `lib/client.js(+.map)` 拷进安装副本即可热刷（无需重启、无需重装 tarball）：
+- 改 `src/` → build → sync → 浏览器热更；只有改 manifest（package.json / cordis.patch.yml）才需要重装重启；
+- 无头验证（可选）：
 
 ```sh
-pnpm sync -- ~/.dsh/profiles/webtest
+python3 -m playwright install chromium
+python3 test/e2e.py                 # 徽章/面板挂载 + 控制台错误检查
+python3 test/drive-turn.py '...'    # 驱动真实对话读面板数值
 ```
 
-只有改 manifest（package.json / cordis.patch.yml）才需要重装 tarball + 重启 profile。
-
-### 无头验证（可选）
-
-```sh
-python3 -m playwright install chromium          # 首次
-python3 test/e2e.py                             # 面板挂载 + 控制台错误检查
-python3 test/drive-turn.py '用一句话介绍你自己'   # 驱动真实对话，读面板数值
-```
-
-## 架构说明（只依赖公开接口）
+## 架构（只依赖公开 seam）
 
 | 面 | 内容 |
-| --- | --- |
-| 宿主半 `src/index.ts` | 空 `apply` 的受治理条目（与官方 client 插件同构），让宿主 Loader 管生命周期、插件注册表发现 `dsh.client` |
-| 浏览器半 `src/client/*` | `ctx.slots.inject('conversation.input.dock', …)` 注册面板；组件接收框架标准道具（`useProjection`/`useSession`/`sessionId`） |
-| 构建 `tsdown.config.ts` | 复刻官方 shared preset：CJS 闭包工厂（`window.__ModuleLoader__.load`）+ 平台白名单 externals（react 系/cordis/ui-slots 等）+ 其余全部内联 |
-| 数据 | 宿主已注册的会话投影单元（`dsh-token-meter`、`dsh-session-stats`），随 `session/projection` push frame 到达浏览器 |
+|---|---|
+| 宿主半 `src/index.ts` | 空 `apply` 的受治理条目（与官方 client 插件同构） |
+| 浏览器半 `src/client/*` | `ctx.slots.inject('sidebar.footer.action', …)` 注册方形徽章；数据 = session-list store 的 `projectionValues` + `session.history` RPC 折叠 |
+| 构建 `tsdown.config.ts` | 复刻官方 shared preset：CJS 闭包工厂（`window.__ModuleLoader__.load`）+ 平台白名单 externals |
 
 ## License
 
