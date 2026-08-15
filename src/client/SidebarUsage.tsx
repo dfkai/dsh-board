@@ -64,18 +64,6 @@ function MiniEmpty({ text }: { text: string }): JSX.Element {
   return <div className="dsh-rich-mini">{text}</div>
 }
 
-function Row({ label, value, sub, emphasis = false }: { label: string; value: string; sub?: string; emphasis?: boolean }): JSX.Element {
-  return (
-    <div className="dsh-rich-row">
-      <span className="dsh-rich-row-label">{label}</span>
-      <span className="dsh-rich-row-end">
-        <span className={emphasis ? 'dsh-rich-row-value dsh-rich-row-value-emphasis' : 'dsh-rich-row-value'}>{value}</span>
-        {sub === undefined ? null : <span className="dsh-rich-row-sub">{sub}</span>}
-      </span>
-    </div>
-  )
-}
-
 /** Stacked per-turn input/output bars. */
 function TrendBars({ data }: { data: readonly TurnUsage[] }): JSX.Element {
   const max = Math.max(1, ...data.map(item => item.input + item.output))
@@ -449,9 +437,6 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   }, [fold])
 
   const sessionCost = usage === undefined ? 0 : estimateCost(usage, priceFor(dominantModel))
-  const totalIn = usage === undefined ? 0 : usage.uncachedInputTokens + usage.cacheReadTokens + usage.cacheWriteTokens
-  const totalTokens = totalIn + (usage?.outputTokens ?? 0)
-  const cacheHitPercent = totalIn === 0 ? null : Math.round((usage?.cacheReadTokens ?? 0) / totalIn * 100)
 
   const hero = useCountUp(lifetime.total)
   const rank = rankFor(lifetime.total)
@@ -512,23 +497,8 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         <div className="dsh-rich-hero-label">{t('global.tokens')}</div>
       </div>
       <div className="dsh-rich-hero-sub">
-        {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)}
+        {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
-      <SectionTitle>{t('sec.session')}</SectionTitle>
-      {usage === undefined
-        ? <MiniEmpty text={t('spark.empty')} />
-        : (
-          <div className="dsh-rich-rows">
-            <Row label={t('tokens.cost')} value={formatCost(sessionCost)} emphasis />
-            <Row
-              label={t('tokens.in')}
-              value={formatTokens(totalIn)}
-              sub={cacheHitPercent === null ? undefined : t('tokens.cache', { percent: cacheHitPercent })}
-            />
-            <Row label={t('tokens.out')} value={formatTokens(usage.outputTokens)} />
-            <Row label={t('tokens.total')} value={formatTokens(totalTokens)} />
-          </div>
-        )}
       <SectionTitle>{t('sec.trend')}</SectionTitle>
       {fold.perTurn.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
