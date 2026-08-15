@@ -9,6 +9,7 @@
 const CSS = `
 .dsh-board-foot {
   position: relative;
+  width: 100%;
 }
 
 /* Trigger: a square stat tile spanning the sidebar menu width. */
