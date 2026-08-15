@@ -84,8 +84,8 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
 export function formatTokens(n: number): string {
   if (n < 1000) return String(Math.round(n))
   if (n < 1_000_000) return `${Math.round(n / 100) / 10}K`
-  if (n < 100_000_000) return `${Math.round(n / 10_000) / 100}万`
-  return `${Math.round(n / 10_000_000) / 100}亿`
+  if (n < 100_000_000) return `${Math.round(n / 1_000) / 10}万`
+  return `${Math.round(n / 10_000_000) / 10}亿`
 }
 
 /** Compact cost display. */
