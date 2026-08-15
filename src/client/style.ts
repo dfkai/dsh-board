@@ -34,10 +34,9 @@ const CSS = `
   font-size: 13px;
   line-height: 1;
 }
-.dsh-rich-trigger-metrics {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
+.dsh-rich-trigger-name {
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  font-weight: 600;
 }
 .dsh-rich-trigger-tokens {
   font-weight: 600;
@@ -46,6 +45,20 @@ const CSS = `
 .dsh-rich-trigger-cost {
   color: var(--dsw-alias-label-secondary, #6b7280);
   font-size: 11px;
+}
+/* 5s presentation refresh pulse + blue flash when the cost changes. */
+.dsh-rich-trigger-metrics {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  animation: dsh-rich-tick 600ms ease;
+}
+@keyframes dsh-rich-tick {
+  0% { opacity: 0.45; transform: translateY(1px); }
+  100% { opacity: 1; transform: none; }
+}
+.dsh-rich-trigger-metrics.dsh-rich-flash {
+  color: var(--dsw-alias-brand-primary, #4d6bfe);
 }
 .dsh-rich-chevron {
   font-size: 10px;
@@ -477,6 +490,35 @@ const CSS = `
   margin-top: 3px;
   font-size: 10px;
   color: var(--dsw-alias-label-secondary, #6b7280);
+}
+/* Achievement collection: pill badges, earned = brand tinted. */
+.dsh-rich-achievements {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.dsh-rich-ach {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
+  font-size: 10px;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+}
+.dsh-rich-ach-got {
+  color: var(--dsw-alias-label-primary, #1a1a1a);
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d6bfe) 35%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d6bfe) 6%, transparent);
+}
+.dsh-rich-ach-emoji {
+  font-size: 11px;
+}
+.dsh-rich-ach:not(.dsh-rich-ach-got) .dsh-rich-ach-emoji {
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 .dsh-rich-mini {
   font-size: 11px;

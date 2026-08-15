@@ -6,6 +6,7 @@ import { NS, type RichKey } from './locales.ts'
 import { estimateCost, isPeakHour, priceFor } from './pricing.ts'
 import { foldHistory, formatCost, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
+import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
 
 /** Structural view of the api client this entry consumes. */
 interface HistoryValue {
@@ -326,6 +327,31 @@ function MembershipCard({ total, daily, t }: {
   )
 }
 
+function Achievements({ stats, t }: {
+  stats: UsageStats
+  t: PropsLocale<typeof NS>['t']
+}): JSX.Element {
+  return (
+    <div className="dsh-rich-achievements">
+      {ACHIEVEMENTS.map(achievement => {
+        const got = achievement.test(stats)
+        const nameKey = `ach.${achievement.id}` as RichKey
+        const condKey = `ach.${achievement.id}.cond` as RichKey
+        return (
+          <span
+            key={achievement.id}
+            className={got ? 'dsh-rich-ach dsh-rich-ach-got' : 'dsh-rich-ach'}
+            title={got ? t(nameKey) : `${t(nameKey)} · ${t(condKey)}`}
+          >
+            <span className="dsh-rich-ach-emoji">{achievement.emoji}</span>
+            <span className="dsh-rich-ach-name">{t(nameKey)}</span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 /**
  * Sidebar foot entry: a live usage console next to Settings. Wide sidebar:
  * inline panel, expanded by default, collapsible (persisted). Rail: icon +
@@ -430,6 +456,28 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   const hero = useCountUp(lifetime.total)
   const rank = rankFor(lifetime.total)
   const rankName = t(`rank.${LEVELS.indexOf(rank.level)}` as RichKey)
+  const usageStats = useMemo(() => computeStats(lifetime.daily, ids.length), [lifetime.daily, ids.length])
+
+  // Refresh feel: a visible 5s pulse on the trigger, plus a blue flash
+  // whenever the session cost actually changes (data itself arrives through
+  // live push frames — this is the presentation refresh).
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setTick(value => value + 1), 5000)
+    return () => clearInterval(timer)
+  }, [])
+  const [flash, setFlash] = useState(false)
+  const prevCostRef = useRef(sessionCost)
+  useEffect(() => {
+    if (prevCostRef.current !== sessionCost) {
+      setFlash(true)
+      const timer = setTimeout(() => setFlash(false), 700)
+      prevCostRef.current = sessionCost
+      return () => clearTimeout(timer)
+    }
+    prevCostRef.current = sessionCost
+    return undefined
+  }, [sessionCost])
 
   const toggle = (): void => {
     if (wide) {
@@ -459,13 +507,12 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           </button>
         </span>
       </div>
-      <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
       <div className="dsh-rich-hero">
         <div className="dsh-rich-hero-value">{formatTokens(hero)}</div>
         <div className="dsh-rich-hero-label">{t('global.tokens')}</div>
       </div>
       <div className="dsh-rich-hero-sub">
-        {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)}
+        {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)}
       </div>
       <SectionTitle>{t('sec.session')}</SectionTitle>
       {usage === undefined
@@ -482,8 +529,6 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <Row label={t('tokens.total')} value={formatTokens(totalTokens)} />
           </div>
         )}
-      <SectionTitle>{t('sec.model')}</SectionTitle>
-      {models.length === 0 ? <MiniEmpty text={t('spark.empty')} /> : <ModelRows models={models} t={t} />}
       <SectionTitle>{t('sec.trend')}</SectionTitle>
       {fold.perTurn.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
@@ -509,6 +554,11 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <div className="dsh-rich-heat-note">{t('heat.note')}</div>
           </>
         )}
+      <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
+      <SectionTitle>{t('sec.model')}</SectionTitle>
+      {models.length === 0 ? <MiniEmpty text={t('spark.empty')} /> : <ModelRows models={models} t={t} />}
+      <SectionTitle>{t('sec.achievements')}</SectionTitle>
+      <Achievements stats={usageStats} t={t} />
       <SectionTitle>{t('sec.global')}</SectionTitle>
       {lifetime.sessions.length === 0
         ? <MiniEmpty text={t('spark.empty')} />
@@ -528,11 +578,14 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         title={rankName}
         onClick={toggle}
       >
-        <span className={wide ? 'dsh-rich-trigger-rank' : 'dsh-rich-orb-emoji'}>{rank.level.emoji}</span>
+        {wide
+          ? null
+          : <span className="dsh-rich-orb-emoji">{rank.level.emoji}</span>}
         {wide
           ? (
             <>
-              <span className="dsh-rich-trigger-metrics">
+              <span key={tick} className={flash ? 'dsh-rich-trigger-metrics dsh-rich-flash' : 'dsh-rich-trigger-metrics'}>
+                <span className="dsh-rich-trigger-name">{rankName}</span>
                 <span className="dsh-rich-trigger-tokens">{formatTokens(lifetime.total)}</span>
                 <span className="dsh-rich-trigger-cost">{formatCost(sessionCost)}</span>
               </span>
