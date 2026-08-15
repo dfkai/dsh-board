@@ -1,7 +1,8 @@
 import { memo, type ReactNode } from 'react'
-import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import type { JobView, SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
+import { NS, type RichKey } from './locales.ts'
 
 /** Mirrors the `sessionStats` projection fields this strip shows. */
 interface SessionStats {
@@ -28,7 +29,7 @@ interface SubSnapshot {
   entries: SubEntry[]
 }
 
-export type RichStripProps = PropsRuntime<'conversation.input.dock'>
+export type RichStripProps = PropsRuntime<'conversation.input.dock'> & PropsLocale<typeof NS>
 
 const NO_JOBS: readonly JobView[] = []
 const NO_SUBS: SubSnapshot = { entries: [] }
@@ -77,7 +78,7 @@ function Cell({ label, value, sub, accent, bar }: {
  * the framework's per-session projection seat, plus the jobs and subagent
  * mirrors from the runtime's session-list store.
  */
-export const RichStrip = memo(function RichStrip({ useProjection, useSessions, sessionId }: RichStripProps) {
+export const RichStrip = memo(function RichStrip({ useProjection, useSessions, sessionId, t }: RichStripProps) {
   const usage = useProjection('tokenUsage') as TokenUsageProjection | undefined
   const pressure = useProjection('contextPressure') as ContextPressureProjection | undefined
   const stats = useProjection('sessionStats') as SessionStats | undefined
@@ -115,7 +116,7 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
   if (!hasActivity) {
     return (
       <div className="dsh-rich-strip dsh-rich-empty" data-dsh-rich-session={sessionId}>
-        <span className="dsh-rich-empty-text">dsh-rich · 等待会话活动（token / 任务 / 子代理出现后展开）</span>
+        <span className="dsh-rich-empty-text">{t('empty')}</span>
       </div>
     )
   }
@@ -124,42 +125,46 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
     <div className="dsh-rich-strip" data-dsh-rich-session={sessionId}>
       <div className="dsh-rich-cells">
         <Cell
-          label="上下文占用"
+          label={t('label.context')}
           value={occupancy === null ? '—' : `${occupancy.percent}%`}
           sub={occupancy === null ? undefined : `${formatTokens(occupancy.used)} / ${formatTokens(occupancy.window)}`}
           accent={occupancy !== null && occupancy.percent >= 90 ? '#ff5c7a' : '#7c5cff'}
           bar={occupancy === null ? undefined : { percent: occupancy.percent }}
         />
         <Cell
-          label="Token 消耗"
+          label={t('label.tokens')}
           value={showTokens ? `↑${formatTokens(inputTokens)} · ↓${formatTokens(outputTokens)}` : '—'}
-          sub={stats !== undefined && stats.decodeMs > 0 ? `解码 ${formatDuration(stats.decodeMs)}` : undefined}
+          sub={stats !== undefined && stats.decodeMs > 0 ? t('sub.decode', { duration: formatDuration(stats.decodeMs) }) : undefined}
         />
         <Cell
-          label="后台任务"
-          value={liveJobs.length > 0 ? `${liveJobs.length} 运行中` : jobs.length > 0 ? `${jobs.length} 条` : '无'}
+          label={t('label.jobs')}
+          value={liveJobs.length > 0
+            ? t('value.jobs.running', { n: liveJobs.length })
+            : jobs.length > 0
+              ? t('value.jobs.count', { n: jobs.length })
+              : t('value.none')}
           sub={firstLiveJob === undefined ? undefined : truncate(firstLiveJob.label, 36)}
           accent={liveJobs.length > 0 ? '#00e5ff' : undefined}
         />
         <Cell
-          label="子代理"
+          label={t('label.subagents')}
           value={children.length === 0
-            ? '无'
+            ? t('value.none')
             : runningSubs.length > 0
-              ? `${runningSubs.length} / ${children.length} 运行中`
-              : `${children.length} 个空闲`}
+              ? t('value.subs.running', { running: runningSubs.length, total: children.length })
+              : t('value.subs.idle', { total: children.length })}
           sub={runningSubs[0]?.label === undefined ? undefined : truncate(runningSubs[0].label, 36)}
           accent={runningSubs.length > 0 ? '#7c5cff' : undefined}
         />
         <Cell
-          label="轮次 / 步骤"
+          label={t('label.turns')}
           value={stats === undefined || stats.steps === 0 ? '—' : `${stats.turns} / ${stats.steps}`}
-          sub={stats !== undefined && stats.llmMs > 0 ? `LLM ${formatDuration(stats.llmMs)}` : undefined}
+          sub={stats !== undefined && stats.llmMs > 0 ? t('sub.llm', { duration: formatDuration(stats.llmMs) }) : undefined}
         />
         <Cell
-          label="首 token 延迟"
+          label={t('label.ttft')}
           value={stats !== undefined && stats.ttftSteps > 0 ? formatDuration(stats.ttftMs / stats.ttftSteps) : '—'}
-          sub={stats !== undefined && stats.toolMs > 0 ? `工具 ${formatDuration(stats.toolMs)}` : undefined}
+          sub={stats !== undefined && stats.toolMs > 0 ? t('sub.tools', { duration: formatDuration(stats.toolMs) }) : undefined}
         />
       </div>
     </div>
