@@ -52,7 +52,6 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "prepare": "tsdown",
     "sync": "node scripts/sync.mjs"
   },
   "devDependencies": {
