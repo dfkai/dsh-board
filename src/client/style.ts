@@ -35,8 +35,8 @@ const CSS = `
   100% { background-position: 0 0, 300% 0; }
 }
 @keyframes dsh-rich-glow {
-  0%, 100% { box-shadow: 0 0 6px rgba(124, 92, 255, 0.25); }
-  50% { box-shadow: 0 0 16px rgba(0, 194, 255, 0.45); }
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--tier, #7c5cff) 30%, transparent); }
+  50% { box-shadow: 0 0 16px color-mix(in srgb, var(--tier, #7c5cff) 60%, transparent); }
 }
 .dsh-rich-trigger-rank {
   font-size: 14px;
@@ -49,7 +49,7 @@ const CSS = `
 }
 .dsh-rich-trigger-tokens {
   font-weight: 700;
-  background: linear-gradient(90deg, #7c5cff, #00c2ff);
+  background: linear-gradient(90deg, var(--tier, #7c5cff), #00c2ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -104,6 +104,7 @@ const CSS = `
   padding: 12px;
   border-radius: 12px;
   border: 1px solid var(--dsw-alias-border-l1, rgba(127, 127, 255, 0.25));
+  border-top: 2px solid color-mix(in srgb, var(--tier, #7c5cff) 55%, transparent);
   background: var(--dsw-alias-bg-layer-1, rgba(24, 26, 38, 0.96));
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   color: var(--dsw-alias-label-primary, #ecebf5);
@@ -361,6 +362,55 @@ const CSS = `
   from { background-position: 0% 0; }
   to { background-position: 200% 0; }
 }
+.dsh-rich-card-eta {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: color-mix(in srgb, var(--tier, #7c5cff) 85%, var(--dsw-alias-label-secondary, #8f8ba8));
+}
+.dsh-rich-card-perks {
+  margin-top: 7px;
+  display: grid;
+  gap: 3px;
+}
+.dsh-rich-card-perk {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--dsw-alias-label-primary, #ecebf5);
+}
+.dsh-rich-card-perk-locked {
+  color: var(--dsw-alias-label-secondary, #8f8ba8);
+}
+.dsh-rich-card-perk-label {
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+  white-space: nowrap;
+}
+.dsh-rich-card-perk-value {
+  text-align: right;
+}
+/* Level-up celebration: one-shot ✨ flash overlay. */
+.dsh-rich-card {
+  position: relative;
+  overflow: hidden;
+}
+.dsh-rich-card.dsh-rich-levelup::after {
+  content: '✨';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tier, #7c5cff) 30%, transparent), transparent 70%);
+  animation: dsh-rich-celebrate 2.3s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes dsh-rich-celebrate {
+  0% { opacity: 0; transform: scale(0.6); }
+  25% { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
 .dsh-rich-card-next-line {
   margin-top: 5px;
   font-size: 10.5px;
@@ -404,7 +454,7 @@ const CSS = `
   font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  background: linear-gradient(90deg, var(--dsw-alias-brand-primary, #7c5cff), #00c2ff);
+  background: linear-gradient(90deg, var(--tier, #7c5cff), #00c2ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

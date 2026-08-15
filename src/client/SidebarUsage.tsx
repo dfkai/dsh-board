@@ -196,11 +196,13 @@ function SessionRows({ sessions }: {
 
 /**
  * VIP-style membership card: previous tier (unlocked) → current tier
- * (glowing, tier-colored) → next tier (locked), a flowing progress bar, and
- * the full ten-rung ladder with passed/current/future states.
+ * (glowing, tier-colored) → next tier (locked), a flowing progress bar with
+ * percentage, an unlock ETA at the user's current pace, per-tier perks, a
+ * level-up celebration flash, and the full ten-rung ladder.
  */
-function MembershipCard({ total, t }: {
+function MembershipCard({ total, daily, t }: {
   total: number
+  daily: readonly { day: number; tokens: number }[]
   t: PropsLocale<typeof NS>['t']
 }): JSX.Element {
   const rank = rankFor(total)
@@ -208,8 +210,41 @@ function MembershipCard({ total, t }: {
   const prev = index > 0 ? LEVELS[index - 1] : null
   const next = rank.next
   const progress = next === null ? 1 : (total - rank.level.floor) / (next.floor - rank.level.floor)
+
+  // Unlock ETA: lifetime pace over active days.
+  const activeTokens = daily.reduce((sum, item) => sum + item.tokens, 0)
+  const activeDays = Math.max(1, daily.filter(item => item.tokens > 0).length)
+  const avgPerDay = activeTokens / activeDays
+  const daysToNext = next === null
+    ? null
+    : Math.ceil((next.floor - total) / Math.max(1, avgPerDay))
+
+  // Level-up celebration: persisted last level, flash once on promotion.
+  const LEVEL_KEY = 'dsh-rich.level'
+  const lastIndexRef = useRef(-1)
+  const [celebrating, setCelebrating] = useState(false)
+  useEffect(() => {
+    let last = lastIndexRef.current
+    if (last === -1) {
+      try {
+        const stored = localStorage.getItem(LEVEL_KEY)
+        if (stored !== null) last = Number(stored)
+      } catch { /* ignore */ }
+    }
+    if (last !== -1 && index > last) {
+      setCelebrating(true)
+      const timer = setTimeout(() => setCelebrating(false), 2400)
+      lastIndexRef.current = index
+      try { localStorage.setItem(LEVEL_KEY, String(index)) } catch { /* ignore */ }
+      return () => clearTimeout(timer)
+    }
+    lastIndexRef.current = index
+    try { localStorage.setItem(LEVEL_KEY, String(index)) } catch { /* ignore */ }
+    return undefined
+  }, [index])
+
   return (
-    <div className="dsh-rich-card" style={{ '--tier': rank.level.color } as never}>
+    <div className={celebrating ? 'dsh-rich-card dsh-rich-levelup' : 'dsh-rich-card'} style={{ '--tier': rank.level.color } as never}>
       <div className="dsh-rich-card-head">
         <span>🏆 {t('rank.title')}</span>
         <span className="dsh-rich-card-lv">{t('rank.lv', { n: index + 1 })}</span>
@@ -245,10 +280,31 @@ function MembershipCard({ total, t }: {
       <div className="dsh-rich-card-next-line">
         {next === null
           ? t('rank.max')
-          : t('rank.next', {
+          : `${t('rank.next', {
             name: t(`rank.${index + 1}` as RichKey),
             count: formatTokens(next.floor - total),
-          })}
+          })} · ${t('rank.percent', { percent: Math.round(progress * 100) })}`}
+      </div>
+      {next !== null && daysToNext !== null
+        ? (
+          <div className="dsh-rich-card-eta">
+            {daysToNext < 1 ? t('rank.eta.today') : t('rank.eta', { days: daysToNext })}
+          </div>
+        )
+        : null}
+      <div className="dsh-rich-card-perks">
+        <div className="dsh-rich-card-perk">
+          <span className="dsh-rich-card-perk-label">✦ {t('rank.perk.current')}</span>
+          <span className="dsh-rich-card-perk-value">{t(`perk.${index}` as RichKey)}</span>
+        </div>
+        {next === null
+          ? null
+          : (
+            <div className="dsh-rich-card-perk dsh-rich-card-perk-locked">
+              <span className="dsh-rich-card-perk-label">🔒 {t('rank.perk.next')}</span>
+              <span className="dsh-rich-card-perk-value">{t(`perk.${index + 1}` as RichKey)}</span>
+            </div>
+          )}
       </div>
       <div className="dsh-rich-card-ladder">
         {LEVELS.map((level, i) => (
@@ -404,7 +460,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           </button>
         </span>
       </div>
-      <MembershipCard total={lifetime.total} t={t} />
+      <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
       <div className="dsh-rich-hero">
         <div className="dsh-rich-hero-value">{formatTokens(hero)}</div>
         <div className="dsh-rich-hero-label">{t('global.tokens')}</div>
@@ -465,7 +521,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   )
 
   return (
-    <div ref={rootRef} className="dsh-rich-foot">
+    <div ref={rootRef} className="dsh-rich-foot" style={{ '--tier': rank.level.color } as never}>
       <button
         type="button"
         className={wide ? 'dsh-rich-trigger' : 'dsh-rich-trigger dsh-rich-orb'}
