@@ -1,5 +1,5 @@
 {
-  "name": "dsh-rich",
+  "name": "dshboard",
   "version": "0.1.0",
   "description": "dsh client panel bundle: a live AI-styled monitor strip above the composer — token usage, context occupancy, background jobs, subagent state, and turn timing.",
   "type": "module",
@@ -29,12 +29,13 @@
     "panel",
     "monitor",
     "tokens",
-    "ui"
+    "ui",
+    "dashboard"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dfkai/dsh-rich.git"
+    "url": "https://github.com/dfkai/dshboard.git"
   },
   "dsh": {
     "bundle": {

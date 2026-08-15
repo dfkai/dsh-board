@@ -1,4 +1,4 @@
-/** dsh-rich browser half: a usage/cost entry at the sidebar foot. */
+/** dshboard browser half: a usage/cost entry at the sidebar foot. */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import { SidebarUsage } from './SidebarUsage.tsx'
 import { injectRichStyles } from './style.ts'
@@ -10,13 +10,13 @@ export const inject = ['slots', 'locale', 'connection']
 /** Register the usage trigger beside Settings at the sidebar foot. */
 export function apply(ctx: ClientContext): void {
   injectRichStyles()
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-rich: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dshboard: dictionaries')
   ctx.effect(() => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
     name: 'sidebar.footer.action',
-    id: 'dsh-rich-usage',
+    id: 'dshboard-usage',
     // Beside Settings; the foot list keeps every entry visible.
     order: 30,
     locale: NS,
     inject: () => ({ api: ctx.connection.api }),
-  }, SidebarUsage)), 'dsh-rich: sidebar usage entry')
+  }, SidebarUsage)), 'dshboard: sidebar usage entry')
 }

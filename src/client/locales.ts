@@ -1,7 +1,7 @@
 /** `rich` namespace dictionaries (zh is the key-set source of truth). */
 
 /** Dictionary namespace owned by this plugin. */
-export const NS = 'rich'
+export const NS = 'board'
 
 export const zh = {
   'panel.title': '用量统计',
