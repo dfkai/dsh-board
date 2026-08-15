@@ -411,15 +411,24 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     <div ref={rootRef} className="dsh-rich-foot">
       <button
         type="button"
-        className="dsh-rich-trigger"
+        className={wide ? 'dsh-rich-trigger' : 'dsh-rich-trigger dsh-rich-orb'}
         aria-expanded={wide ? !collapsed : open}
-        title={t('panel.title')}
+        title={rankName}
         onClick={toggle}
       >
-        <span className="dsh-rich-trigger-emoji">⚡</span>
-        {wide ? <span className="dsh-rich-trigger-label">{t('trigger.wide', { cost: formatCost(sessionCost) })}</span> : null}
-        {running ? <StateDot state="ongoing" className="dsh-rich-dot" /> : null}
-        {wide ? <span className="dsh-rich-chevron">{collapsed ? '▸' : '▾'}</span> : null}
+        <span className={wide ? 'dsh-rich-trigger-rank' : 'dsh-rich-orb-emoji'}>{rank.level.emoji}</span>
+        {wide
+          ? (
+            <>
+              <span className="dsh-rich-trigger-metrics">
+                <span className="dsh-rich-trigger-tokens">{formatTokens(lifetime.total)}</span>
+                <span className="dsh-rich-trigger-cost">{formatCost(sessionCost)}</span>
+              </span>
+              {running ? <StateDot state="ongoing" className="dsh-rich-dot" /> : null}
+              <span className="dsh-rich-chevron">{collapsed ? '▸' : '▾'}</span>
+            </>
+          )
+          : null}
       </button>
       {wide
         ? (collapsed ? null : <div className="dsh-rich-inline">{panel}</div>)

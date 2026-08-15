@@ -7,31 +7,56 @@ const CSS = `
   position: relative;
 }
 .dsh-rich-trigger {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
-  background: transparent;
+  background:
+    linear-gradient(var(--dsw-alias-bg-layer-1, rgba(24, 26, 38, 0.92)), var(--dsw-alias-bg-layer-1, rgba(24, 26, 38, 0.92))) padding-box,
+    linear-gradient(120deg, #7c5cff, #00c2ff, #ff5c7a, #ffd166, #7c5cff) border-box;
+  background-size: 100% 100%, 300% 300%;
   color: var(--dsw-alias-label-secondary, #9b96b8);
   font-size: 12px;
   line-height: 1.3;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
-  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+  animation: dsh-rich-border-flow 6s linear infinite, dsh-rich-glow 2.6s ease-in-out infinite;
+  transition: transform 150ms ease;
 }
 .dsh-rich-trigger:hover {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.05)) 60%, transparent);
+  transform: scale(1.05);
   color: var(--dsw-alias-label-primary, #f4f2ff);
 }
-.dsh-rich-trigger[aria-expanded='true'] {
-  color: var(--dsw-alias-label-primary, #f4f2ff);
-  border-color: var(--dsw-alias-border-l1, rgba(127, 127, 255, 0.25));
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.05)) 60%, transparent);
+@keyframes dsh-rich-border-flow {
+  0% { background-position: 0 0, 0% 0; }
+  100% { background-position: 0 0, 300% 0; }
 }
-.dsh-rich-trigger-emoji {
-  font-size: 13px;
+@keyframes dsh-rich-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(124, 92, 255, 0.25); }
+  50% { box-shadow: 0 0 16px rgba(0, 194, 255, 0.45); }
+}
+.dsh-rich-trigger-rank {
+  font-size: 14px;
+  line-height: 1;
+}
+.dsh-rich-trigger-metrics {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.dsh-rich-trigger-tokens {
+  font-weight: 700;
+  background: linear-gradient(90deg, #7c5cff, #00c2ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.dsh-rich-trigger-cost {
+  color: var(--dsw-alias-label-secondary, #9b96b8);
+  font-size: 11px;
 }
 .dsh-rich-chevron {
   font-size: 10px;
@@ -40,6 +65,37 @@ const CSS = `
 .dsh-rich-dot {
   line-height: 0;
   display: inline-flex;
+}
+/* Rail badge: a glowing pet-orb with a rotating conic ring. */
+.dsh-rich-orb {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  background: var(--dsw-alias-bg-layer-1, rgba(24, 26, 38, 0.95));
+  border: none;
+}
+.dsh-rich-orb::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #7c5cff, #00c2ff, #ff5c7a, #ffd166, #7c5cff);
+  animation: dsh-rich-orb-rotate 3s linear infinite;
+  z-index: -1;
+}
+@keyframes dsh-rich-orb-rotate {
+  to { transform: rotate(360deg); }
+}
+.dsh-rich-orb-emoji {
+  font-size: 15px;
+  line-height: 1;
+  animation: dsh-rich-orb-bounce 2.2s ease-in-out infinite;
+}
+@keyframes dsh-rich-orb-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
 .dsh-rich-panel {
   width: 250px;
