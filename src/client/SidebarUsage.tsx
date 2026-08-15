@@ -628,8 +628,10 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
             <>
               <span className="dsh-board-badge">
                 <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
-                <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
-                <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
+                <span className="dsh-board-badge-nums">
+                  <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
+                  <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
+                </span>
                 <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
                 <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
               </span>
