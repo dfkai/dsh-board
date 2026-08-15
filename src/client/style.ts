@@ -83,33 +83,16 @@ const CSS = `
   stroke-linecap: round;
   transition: stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.dsh-board-ring-emoji {
+.dsh-board-ring-label {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-}
-.dsh-board-ring-spark {
-  position: absolute;
-  inset: 0;
-  animation: dsh-board-spin 5s linear infinite;
-}
-.dsh-board-ring-spark::before {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
-  background: var(--dsw-alias-brand-primary, #4d6bfe);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--dsw-alias-brand-primary, #4d6bfe) 70%, transparent);
-}
-@keyframes dsh-board-spin {
-  to { transform: rotate(360deg); }
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  font-variant-numeric: tabular-nums;
 }
 .dsh-board-badge-sub {
   font-size: 11px;

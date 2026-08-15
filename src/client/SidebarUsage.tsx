@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
@@ -265,7 +265,7 @@ function SessionRows({ sessions }: {
 
 /** Animated badge centerpiece: today's share of the week sweeps in as a
  *  gradient arc with a slowly orbiting sparkle. */
-function BadgeRing({ share, emoji }: { share: number; emoji: string }): JSX.Element {
+function BadgeRing({ share }: { share: number }): JSX.Element {
   const r = 26
   const c = 2 * Math.PI * r
   const pct = Math.max(0, Math.min(1, share))
@@ -294,8 +294,7 @@ function BadgeRing({ share, emoji }: { share: number; emoji: string }): JSX.Elem
           transform="rotate(-90 32 32)"
         />
       </svg>
-      <span className="dsh-board-ring-emoji">{emoji}</span>
-      <span className="dsh-board-ring-spark" />
+      <span className="dsh-board-ring-label">{Math.round(pct * 100)}%</span>
     </span>
   )
 }
@@ -464,7 +463,16 @@ function Achievements({ stats, t }: {
  * store, per-turn/per-model series folded from the history RPC, and a
  * lifetime aggregate across every session row.
  */
-export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): JSX.Element {
+const MemoMembershipCard = memo(MembershipCard)
+const MemoContextBlock = memo(ContextBlock)
+const MemoHeatmap = memo(Heatmap)
+const MemoCumulativeArea = memo(CumulativeArea)
+const MemoTrendBars = memo(TrendBars)
+const MemoModelRows = memo(ModelRows)
+const MemoSessionRows = memo(SessionRows)
+const MemoAchievements = memo(Achievements)
+
+export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): JSX.Element {
   const current = useSessions(s => s.current)
   const ids = useSessions(s => s.ids)
   const byId = useSessions(s => s.byId)
@@ -650,13 +658,13 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           <span className="dsh-board-usage-value">{formatTokens(lifetime.week)}</span>
         </div>
       </div>
-      <ContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
+      <MemoContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
       {fold.perTurn.length === 0
         ? null
         : (
           <>
             <SectionTitle>{t('sec.trend')}</SectionTitle>
-            <TrendBars data={fold.perTurn.slice(-24)} />
+            <MemoTrendBars data={fold.perTurn.slice(-24)} />
             <div className="dsh-board-legend">
               <span><i className="dsh-board-legend-in" />{t('legend.in')}</span>
               <span><i className="dsh-board-legend-out" />{t('legend.out')}</span>
@@ -668,7 +676,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         : (
           <>
             <SectionTitle>{t('sec.cumulative')}</SectionTitle>
-            <CumulativeArea values={fold.cumulative.slice(-60)} />
+            <MemoCumulativeArea values={fold.cumulative.slice(-60)} />
           </>
         )}
       {lifetime.daily.length === 0
@@ -676,27 +684,27 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         : (
           <>
             <SectionTitle>{t('sec.heat')}</SectionTitle>
-            <Heatmap daily={lifetime.daily} />
+            <MemoHeatmap daily={lifetime.daily} />
             <div className="dsh-board-heat-note">{t('heat.note')}</div>
           </>
         )}
-      <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
+      <MemoMembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
       {models.length === 0
         ? null
         : (
           <>
             <SectionTitle>{t('sec.model')}</SectionTitle>
-            <ModelRows models={models} t={t} />
+            <MemoModelRows models={models} t={t} />
           </>
         )}
       <SectionTitle>{t('sec.achievements')}</SectionTitle>
-      <Achievements stats={usageStats} t={t} />
+      <MemoAchievements stats={usageStats} t={t} />
       {lifetime.sessions.length === 0
         ? null
         : (
           <>
             <SectionTitle>{t('sec.global')}</SectionTitle>
-            <SessionRows sessions={lifetime.sessions} />
+            <MemoSessionRows sessions={lifetime.sessions} />
           </>
         )}
       <div className="dsh-board-note">
@@ -719,7 +727,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             <>
               <span className={flash ? 'dsh-board-badge dsh-board-flash' : 'dsh-board-badge'}>
                 <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
-                <BadgeRing share={lifetime.week > 0 ? lifetime.today / lifetime.week : 0} emoji={rank.level.emoji} />
+                <BadgeRing share={lifetime.week > 0 ? lifetime.today / lifetime.week : 0} />
                 <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)}</span>
                 <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
                 <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
@@ -737,4 +745,4 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
           : null}
     </div>
   )
-}
+})
