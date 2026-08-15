@@ -33,6 +33,7 @@ with sync_playwright() as p:
             break
     print('--- strip text after turn ---')
     print(page.locator('.dsh-rich-strip').first.inner_text())
+    print(f"--- dots: {page.locator('.dsh-rich-dot').count()} | cells: {page.locator('.dsh-rich-cell').count()} ---")
     print('--- console errors ---')
     for line in errors[:10]:
         print(line)

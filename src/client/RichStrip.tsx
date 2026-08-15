@@ -1,4 +1,5 @@
 import { memo, type ReactNode } from 'react'
+import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import type { JobView, SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
@@ -51,15 +52,14 @@ function truncate(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`
 }
 
-function Cell({ label, value, sub, accent, bar }: {
+function Cell({ label, value, sub, bar }: {
   label: string
   value: ReactNode
   sub?: string
-  accent?: string
   bar?: { percent: number }
 }): ReactNode {
   return (
-    <div className="dsh-rich-cell" style={accent === undefined ? undefined : { '--accent': accent } as never}>
+    <div className="dsh-rich-cell">
       <div className="dsh-rich-label">{label}</div>
       <div className="dsh-rich-value">{value}</div>
       {sub === undefined ? null : <div className="dsh-rich-sub">{sub}</div>}
@@ -126,9 +126,15 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
       <div className="dsh-rich-cells">
         <Cell
           label={t('label.context')}
-          value={occupancy === null ? '—' : `${occupancy.percent}%`}
+          value={occupancy === null
+            ? '—'
+            : (
+              <>
+                {occupancy.percent >= 90 ? <StateDot state="warning" className="dsh-rich-dot" /> : null}
+                {`${occupancy.percent}%`}
+              </>
+            )}
           sub={occupancy === null ? undefined : `${formatTokens(occupancy.used)} / ${formatTokens(occupancy.window)}`}
-          accent={occupancy !== null && occupancy.percent >= 90 ? '#ff5c7a' : '#7c5cff'}
           bar={occupancy === null ? undefined : { percent: occupancy.percent }}
         />
         <Cell
@@ -139,22 +145,30 @@ export const RichStrip = memo(function RichStrip({ useProjection, useSessions, s
         <Cell
           label={t('label.jobs')}
           value={liveJobs.length > 0
-            ? t('value.jobs.running', { n: liveJobs.length })
+            ? (
+              <>
+                <StateDot state="ongoing" className="dsh-rich-dot" />
+                {t('value.jobs.running', { n: liveJobs.length })}
+              </>
+            )
             : jobs.length > 0
               ? t('value.jobs.count', { n: jobs.length })
               : t('value.none')}
           sub={firstLiveJob === undefined ? undefined : truncate(firstLiveJob.label, 36)}
-          accent={liveJobs.length > 0 ? '#00e5ff' : undefined}
         />
         <Cell
           label={t('label.subagents')}
           value={children.length === 0
             ? t('value.none')
             : runningSubs.length > 0
-              ? t('value.subs.running', { running: runningSubs.length, total: children.length })
+              ? (
+                <>
+                  <StateDot state="ongoing" className="dsh-rich-dot" />
+                  {t('value.subs.running', { running: runningSubs.length, total: children.length })}
+                </>
+              )
               : t('value.subs.idle', { total: children.length })}
           sub={runningSubs[0]?.label === undefined ? undefined : truncate(runningSubs[0].label, 36)}
-          accent={runningSubs.length > 0 ? '#7c5cff' : undefined}
         />
         <Cell
           label={t('label.turns')}
