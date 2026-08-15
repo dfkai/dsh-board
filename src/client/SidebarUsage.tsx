@@ -501,7 +501,18 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       }
     }
     sessions.sort((left, right) => right.tokens - left.tokens)
+    const now = new Date()
+    const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)).getTime()
+    let today = 0
+    let week = 0
+    for (const item of daily) {
+      if (item.day === todayMid) today += item.tokens
+      if (item.day >= weekStart && item.day <= todayMid) week += item.tokens
+    }
     return {
+      today,
+      week,
       input,
       output,
       cost,
@@ -540,18 +551,18 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   // Blue flash only when a badge number ACTUALLY changes (push-live data;
   // no synthetic refresh — large totals need no fake pulses).
   const [flash, setFlash] = useState(false)
-  const prevBadgeRef = useRef({ cost: lifetime.cost, total: lifetime.total })
+  const prevBadgeRef = useRef({ cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week })
   useEffect(() => {
     const prev = prevBadgeRef.current
-    if (prev.cost !== lifetime.cost || prev.total !== lifetime.total) {
+    if (prev.cost !== lifetime.cost || prev.total !== lifetime.total || prev.today !== lifetime.today || prev.week !== lifetime.week) {
       setFlash(true)
       const timer = setTimeout(() => setFlash(false), 700)
-      prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total }
+      prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week }
       return () => clearTimeout(timer)
     }
-    prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total }
+    prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week }
     return undefined
-  }, [lifetime.cost, lifetime.total])
+  }, [lifetime.cost, lifetime.total, lifetime.today, lifetime.week])
 
   const toggle = (): void => {
     if (wide) {
@@ -587,6 +598,20 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       </div>
       <div className="dsh-board-hero-sub">
         {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('hero.cache', { percent: lifetime.input === 0 ? 0 : Math.round(lifetime.hit / lifetime.input * 100) })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
+      </div>
+      <div className="dsh-board-usage">
+        <div className="dsh-board-usage-item">
+          <span className="dsh-board-usage-label">{t('usage.total')}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.total)}</span>
+        </div>
+        <div className="dsh-board-usage-item">
+          <span className="dsh-board-usage-label">{t('usage.today')}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.today)}</span>
+        </div>
+        <div className="dsh-board-usage-item">
+          <span className="dsh-board-usage-label">{t('usage.week')}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.week)}</span>
+        </div>
       </div>
       <ContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
       {fold.perTurn.length === 0
@@ -658,6 +683,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
               <span className={flash ? 'dsh-board-badge dsh-board-flash' : 'dsh-board-badge'}>
                 <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
                 <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)}</span>
+                <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
                 <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
               </span>
               {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}

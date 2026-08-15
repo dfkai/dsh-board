@@ -61,6 +61,12 @@ const CSS = `
   color: var(--dsw-alias-label-primary, #1a1a1a);
   line-height: 1.2;
 }
+.dsh-board-badge-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  font-variant-numeric: tabular-nums;
+}
 .dsh-board-badge-cost {
   font-size: 13px;
   font-weight: 500;
@@ -459,6 +465,33 @@ const CSS = `
 .dsh-board-hero-label {
   font-size: 11px;
   color: var(--dsw-alias-label-secondary, #6b7280);
+}
+.dsh-board-usage {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.dsh-board-usage-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.06));
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.03)) 60%, transparent);
+  text-align: center;
+}
+.dsh-board-usage-label {
+  display: block;
+  font-size: 10px;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+}
+.dsh-board-usage-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--dsw-alias-label-primary, #1a1a1a);
+  font-variant-numeric: tabular-nums;
 }
 .dsh-board-hero-sub {
   font-size: 10.5px;
