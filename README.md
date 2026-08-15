@@ -1,10 +1,12 @@
 # dsh-rich
 
-给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在对话 composer 上方加一条 **AI 风格实时监控带**，显示
+给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在对话 composer 上方加一条 **AI 风格实时监控带**。刻意**不与官方 stats 条重复**——官方已有会话累计统计，这里只做四个增量：
 
-- **上下文占用**——`contextPressure` 投影（已用 / 窗口上限，≥90% 变红）；
-- **Token 消耗**——`tokenUsage` 投影（↑输入 ↓输出）；
-- **轮次 / 步骤** 与 **首 token 延迟**——`sessionStats` 投影（LLM / 工具耗时）。
+- **剩余预算**——`contextPressure` 投影：剩余 token 数 + **按当前每轮平均输入预测还能跑几轮**；
+- **本轮**——上一轮（或进行中轮）的**本轮视角**输出 token、步数、耗时（官方只有会话累计）；
+- **流式速率**——输出流式期间的**实时 tok/s** + 已流式时长（采样增长速率，≈ 估算）；
+- **后台任务**——运行中数量 + **首个任务的实时已运行计时**（秒级跳动）；
+- **子代理**——运行中 / 总数 + 标签。
 
 全部数据来自宿主**已有的会话投影**（`tokenUsage` / `contextPressure` / `sessionStats`）：本插件零宿主逻辑、零 RPC、零存储，浏览器半通过框架的 per-session 投影座读取，挂载在 `conversation.input.dock` slot（composer 上方的整行 list 位，与官方读数共存）。
 
