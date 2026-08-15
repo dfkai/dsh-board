@@ -81,7 +81,6 @@ const CSS = `
   stroke: url(#dsh-board-ring-grad);
   stroke-width: 3;
   stroke-linecap: round;
-  transition: stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .dsh-board-ring-label {
   position: absolute;
@@ -104,13 +103,6 @@ const CSS = `
   font-size: 13px;
   font-weight: 500;
   color: var(--dsw-alias-brand-primary, #4d6bfe);
-}
-.dsh-board-badge.dsh-board-flash {
-  animation: dsh-board-badge-flash 700ms ease;
-}
-@keyframes dsh-board-badge-flash {
-  0% { opacity: 0.4; }
-  100% { opacity: 1; }
 }
 .dsh-board-chevron {
   position: absolute;
@@ -153,7 +145,6 @@ const CSS = `
   color: var(--dsw-alias-label-primary, #1a1a1a);
   font-size: 12px;
   line-height: 1.5;
-  animation: dsh-board-pop 140ms ease;
 }
 .dsh-board-inline .dsh-board-panel {
   width: auto;
@@ -179,10 +170,6 @@ const CSS = `
   bottom: calc(100% + 8px);
   left: 0;
   z-index: 60;
-}
-@keyframes dsh-board-pop {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: none; }
 }
 .dsh-board-panel-title {
   display: flex;
@@ -316,7 +303,6 @@ const CSS = `
   height: 100%;
   border-radius: 999px;
   background: var(--dsw-alias-brand-primary, #4d6bfe);
-  transition: width 400ms ease;
 }
 .dsh-board-card-next-line {
   margin-top: 6px;
@@ -374,20 +360,6 @@ const CSS = `
 .dsh-board-card-rung-locked {
   opacity: 0.4;
 }
-/* Level-up: a brief, quiet brand wash. */
-.dsh-board-card.dsh-board-levelup::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d6bfe) 12%, transparent);
-  animation: dsh-board-celebrate 1.6s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes dsh-board-celebrate {
-  0% { opacity: 0; }
-  30% { opacity: 1; }
-  100% { opacity: 0; }
-}
 
 /* Hero: a plain large number. */
 /* Context window: occupancy, remaining budget, and composition stack. */
@@ -425,7 +397,6 @@ const CSS = `
   height: 100%;
   border-radius: 999px;
   background: var(--dsw-alias-brand-primary, #4d6bfe);
-  transition: width 400ms ease;
 }
 .dsh-board-context-sub {
   margin-top: 4px;
@@ -604,13 +575,11 @@ const CSS = `
   height: 100%;
   border-radius: 999px;
   background: var(--dsw-alias-brand-primary, #4d6bfe);
-  transition: width 300ms ease;
 }
 .dsh-board-session-fill {
   height: 100%;
   border-radius: 999px;
   background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d6bfe) 65%, transparent);
-  transition: width 300ms ease;
 }
 .dsh-board-chart {
   display: block;

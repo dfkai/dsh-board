@@ -33,29 +33,6 @@ function readCollapsed(): boolean {
   }
 }
 
-/** Ease-out count-up toward `target` — the hero number "rolls". */
-function useCountUp(target: number, duration = 600): number {
-  const [value, setValue] = useState(target)
-  const valueRef = useRef(target)
-  useEffect(() => {
-    const from = valueRef.current
-    if (from === target) return
-    const start = Date.now()
-    let frame = 0
-    const tick = (): void => {
-      const t = Math.min(1, (Date.now() - start) / duration)
-      const eased = 1 - Math.pow(1 - t, 3)
-      const next = from + (target - from) * eased
-      valueRef.current = next
-      setValue(next)
-      if (t < 1) frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [target, duration])
-  return value
-}
-
 function SectionTitle({ children }: { children: React.ReactNode }): JSX.Element {
   return <div className="dsh-board-sec">{children}</div>
 }
@@ -269,11 +246,6 @@ function BadgeRing({ share }: { share: number }): JSX.Element {
   const r = 26
   const c = 2 * Math.PI * r
   const pct = Math.max(0, Math.min(1, share))
-  const [drawn, setDrawn] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => setDrawn(true), 60)
-    return () => clearTimeout(timer)
-  }, [])
   return (
     <span className="dsh-board-ring">
       <svg viewBox="0 0 64 64" width={64} height={64} aria-hidden>
@@ -290,7 +262,7 @@ function BadgeRing({ share }: { share: number }): JSX.Element {
           cy={32}
           r={r}
           strokeDasharray={c}
-          strokeDashoffset={drawn ? c * (1 - pct) : c}
+          strokeDashoffset={c * (1 - pct)}
           transform="rotate(-90 32 32)"
         />
       </svg>
@@ -324,32 +296,8 @@ function MembershipCard({ total, daily, t }: {
     ? null
     : Math.ceil((next.floor - total) / Math.max(1, avgPerDay))
 
-  // Level-up celebration: persisted last level, flash once on promotion.
-  const LEVEL_KEY = 'dsh-board.level'
-  const lastIndexRef = useRef(-1)
-  const [celebrating, setCelebrating] = useState(false)
-  useEffect(() => {
-    let last = lastIndexRef.current
-    if (last === -1) {
-      try {
-        const stored = localStorage.getItem(LEVEL_KEY)
-        if (stored !== null) last = Number(stored)
-      } catch { /* ignore */ }
-    }
-    if (last !== -1 && index > last) {
-      setCelebrating(true)
-      const timer = setTimeout(() => setCelebrating(false), 2400)
-      lastIndexRef.current = index
-      try { localStorage.setItem(LEVEL_KEY, String(index)) } catch { /* ignore */ }
-      return () => clearTimeout(timer)
-    }
-    lastIndexRef.current = index
-    try { localStorage.setItem(LEVEL_KEY, String(index)) } catch { /* ignore */ }
-    return undefined
-  }, [index])
-
   return (
-    <div className={celebrating ? 'dsh-board-card dsh-board-levelup' : 'dsh-board-card'}>
+    <div className="dsh-board-card">
       <div className="dsh-board-card-head">
         <span>{t('rank.title')}</span>
         <span className="dsh-board-card-lv">{t('rank.lv', { n: index + 1 })}</span>
@@ -588,26 +536,10 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
 
   const sessionCost = usage === undefined ? 0 : estimateCost(usage, priceFor(dominantModel))
 
-  const hero = useCountUp(lifetime.total)
+  const hero = lifetime.total
   const rank = rankFor(lifetime.total)
   const rankName = t(`rank.${LEVELS.indexOf(rank.level)}` as RichKey)
   const usageStats = useMemo(() => computeStats(lifetime.daily, ids.length), [lifetime.daily, ids.length])
-
-  // Blue flash only when a badge number ACTUALLY changes (push-live data;
-  // no synthetic refresh — large totals need no fake pulses).
-  const [flash, setFlash] = useState(false)
-  const prevBadgeRef = useRef({ cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week })
-  useEffect(() => {
-    const prev = prevBadgeRef.current
-    if (prev.cost !== lifetime.cost || prev.total !== lifetime.total || prev.today !== lifetime.today || prev.week !== lifetime.week) {
-      setFlash(true)
-      const timer = setTimeout(() => setFlash(false), 700)
-      prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week }
-      return () => clearTimeout(timer)
-    }
-    prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total, today: lifetime.today, week: lifetime.week }
-    return undefined
-  }, [lifetime.cost, lifetime.total, lifetime.today, lifetime.week])
 
   const toggle = (): void => {
     if (wide) {
@@ -725,7 +657,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         {wide
           ? (
             <>
-              <span className={flash ? 'dsh-board-badge dsh-board-flash' : 'dsh-board-badge'}>
+              <span className="dsh-board-badge">
                 <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
                 <BadgeRing share={lifetime.week > 0 ? lifetime.today / lifetime.week : 0} />
                 <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)}</span>
