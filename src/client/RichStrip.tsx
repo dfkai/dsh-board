@@ -1,6 +1,7 @@
 import { memo, type ReactNode } from 'react'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
+import type { JobView, SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 
 /** Mirrors the `sessionStats` projection fields this strip shows. */
 interface SessionStats {
@@ -14,7 +15,23 @@ interface SessionStats {
   decodeTokens: number
 }
 
+/** Structural view of the subagent catalog rows this strip reads. */
+interface SubEntry {
+  kind: 'child' | 'diagnostic'
+  id: string
+  activity?: 'running' | 'inactive'
+  mode?: 'one-shot' | 'continuable'
+  label?: string
+  hasChildren?: boolean
+}
+interface SubSnapshot {
+  entries: SubEntry[]
+}
+
 export type RichStripProps = PropsRuntime<'conversation.input.dock'>
+
+const NO_JOBS: readonly JobView[] = []
+const NO_SUBS: SubSnapshot = { entries: [] }
 
 function formatTokens(n: number): string {
   if (n < 1000) return String(n)
@@ -29,12 +46,27 @@ function formatDuration(ms: number): string {
   return `${Math.floor(whole / 60)}m${whole % 60}s`
 }
 
-function Cell({ label, value, sub, accent }: { label: string; value: ReactNode; sub?: string; accent?: string }): ReactNode {
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max - 1)}…`
+}
+
+function Cell({ label, value, sub, accent, bar }: {
+  label: string
+  value: ReactNode
+  sub?: string
+  accent?: string
+  bar?: { percent: number }
+}): ReactNode {
   return (
     <div className="dsh-rich-cell" style={accent === undefined ? undefined : { '--accent': accent } as never}>
       <div className="dsh-rich-label">{label}</div>
       <div className="dsh-rich-value">{value}</div>
       {sub === undefined ? null : <div className="dsh-rich-sub">{sub}</div>}
+      {bar === undefined ? null : (
+        <div className="dsh-rich-bar">
+          <div className="dsh-rich-bar-fill" style={{ width: `${bar.percent}%` }} />
+        </div>
+      )}
     </div>
   )
 }
@@ -42,12 +74,15 @@ function Cell({ label, value, sub, accent }: { label: string; value: ReactNode; 
 /**
  * The monitor strip: a bottom panel above the composer, reading the durable
  * session projections (tokenUsage / contextPressure / sessionStats) through
- * the framework's per-session projection seat.
+ * the framework's per-session projection seat, plus the jobs and subagent
+ * mirrors from the runtime's session-list store.
  */
-export const RichStrip = memo(function RichStrip({ useProjection, sessionId }: RichStripProps) {
+export const RichStrip = memo(function RichStrip({ useProjection, useSessions, sessionId }: RichStripProps) {
   const usage = useProjection('tokenUsage') as TokenUsageProjection | undefined
   const pressure = useProjection('contextPressure') as ContextPressureProjection | undefined
   const stats = useProjection('sessionStats') as SessionStats | undefined
+  const jobs = (useSessions((s: SessionListState) => s.jobsBySession[sessionId]) ?? NO_JOBS) as readonly JobView[]
+  const subs = (useSessions((s: SessionListState) => s.subagentsByParent[sessionId]) ?? NO_SUBS) as SubSnapshot
 
   const inputTokens = usage === undefined
     ? 0
@@ -65,6 +100,11 @@ export const RichStrip = memo(function RichStrip({ useProjection, sessionId }: R
     }
   })()
 
+  const liveJobs = jobs.filter(job => job.status === 'running' || job.status === 'stopping')
+  const firstLiveJob = liveJobs[0]
+  const children = subs.entries.filter(entry => entry.kind === 'child')
+  const runningSubs = children.filter(entry => entry.activity === 'running')
+
   return (
     <div className="dsh-rich-strip" data-dsh-rich-session={sessionId}>
       <div className="dsh-rich-cells">
@@ -73,11 +113,24 @@ export const RichStrip = memo(function RichStrip({ useProjection, sessionId }: R
           value={occupancy === null ? '—' : `${occupancy.percent}%`}
           sub={occupancy === null ? undefined : `${formatTokens(occupancy.used)} / ${formatTokens(occupancy.window)}`}
           accent={occupancy !== null && occupancy.percent >= 90 ? '#ff5c7a' : '#7c5cff'}
+          bar={occupancy === null ? undefined : { percent: occupancy.percent }}
         />
         <Cell
           label="Token 消耗"
           value={showTokens ? `↑${formatTokens(inputTokens)} · ↓${formatTokens(outputTokens)}` : '—'}
           sub={stats !== undefined && stats.decodeMs > 0 ? `解码 ${formatDuration(stats.decodeMs)}` : undefined}
+        />
+        <Cell
+          label="后台任务"
+          value={liveJobs.length > 0 ? `${liveJobs.length} 运行中` : jobs.length > 0 ? `${jobs.length} 条` : '无'}
+          sub={firstLiveJob === undefined ? undefined : truncate(firstLiveJob.label, 36)}
+          accent={liveJobs.length > 0 ? '#00e5ff' : undefined}
+        />
+        <Cell
+          label="子代理"
+          value={children.length === 0 ? '无' : `${runningSubs.length} / ${children.length} 运行中`}
+          sub={runningSubs[0]?.label === undefined ? undefined : truncate(runningSubs[0].label, 36)}
+          accent={runningSubs.length > 0 ? '#7c5cff' : undefined}
         />
         <Cell
           label="轮次 / 步骤"

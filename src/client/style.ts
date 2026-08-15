@@ -47,6 +47,22 @@ const CSS = `
   color: #8b87a8;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dsh-rich-bar {
+  height: 4px;
+  margin-top: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.dsh-rich-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #7c5cff, #00e5ff);
+  transition: width 300ms ease;
 }
 `
 
