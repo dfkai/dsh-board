@@ -94,3 +94,11 @@ export function formatCost(cost: number): string {
   if (cost < 0.01) return `¥${cost.toFixed(4)}`
   return `¥${cost.toFixed(2)}`
 }
+
+/** Compact duration display. */
+export function formatDuration(ms: number): string {
+  const s = ms / 1000
+  if (s < 60) return `${Math.round(s * 10) / 10}s`
+  const whole = Math.round(s)
+  return `${Math.floor(whole / 60)}m${whole % 60}s`
+}

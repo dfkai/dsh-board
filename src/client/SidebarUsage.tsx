@@ -4,7 +4,7 @@ import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
 import { estimateCost, isPeakHour, priceFor } from './pricing.ts'
-import { foldHistory, formatCost, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
+import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
 
@@ -58,6 +58,90 @@ function useCountUp(target: number, duration = 600): number {
 
 function SectionTitle({ children }: { children: React.ReactNode }): JSX.Element {
   return <div className="dsh-rich-sec">{children}</div>
+}
+
+interface PressureView {
+  pressureTokens?: number
+  projectedTokens?: number
+  contextWindow?: number
+}
+interface BreakdownView {
+  systemTokens?: number
+  toolsTokens?: number
+  messageTokens?: number
+}
+
+/** The 1M-context window: occupancy, remaining budget, and what eats it. */
+function ContextBlock({ pressure, breakdown, subagentMs, t }: {
+  pressure: PressureView | undefined
+  breakdown: BreakdownView | undefined
+  subagentMs: number | undefined
+  t: PropsLocale<typeof NS>['t']
+}): JSX.Element | null {
+  if (pressure === undefined && breakdown === undefined) return null
+  const used = pressure?.projectedTokens ?? pressure?.pressureTokens
+  const window = pressure?.contextWindow
+  const percent = used !== undefined && window !== undefined
+    ? Math.min(100, Math.round(used / window * 100))
+    : null
+  const remaining = used !== undefined && window !== undefined ? window - used : null
+  const parts = breakdown === undefined
+    ? null
+    : [
+      { key: 'system', label: t('ctx.legend.system'), tokens: breakdown.systemTokens ?? 0 },
+      { key: 'tools', label: t('ctx.legend.tools'), tokens: breakdown.toolsTokens ?? 0 },
+      { key: 'messages', label: t('ctx.legend.messages'), tokens: breakdown.messageTokens ?? 0 },
+    ]
+  const totalParts = parts === null ? 0 : parts.reduce((sum, part) => sum + part.tokens, 0)
+  return (
+    <div className="dsh-rich-context">
+      <div className="dsh-rich-context-head">
+        <span className="dsh-rich-context-title">{t('sec.context')}</span>
+        <span className="dsh-rich-context-value">{percent === null ? '—' : `${percent}%`}</span>
+      </div>
+      {percent === null
+        ? null
+        : (
+          <div className="dsh-rich-context-bar">
+            <div className="dsh-rich-context-fill" style={{ width: `${percent}%` }} />
+          </div>
+        )}
+      {used !== undefined && window !== undefined
+        ? (
+          <div className="dsh-rich-context-sub">
+            {formatTokens(used)} / {formatTokens(window)} · {t('ctx.remaining', { count: formatTokens(remaining ?? 0) })}
+          </div>
+        )
+        : null}
+      {parts !== null && totalParts > 0
+        ? (
+          <>
+            <div className="dsh-rich-context-stack">
+              {parts.filter(part => part.tokens > 0).map(part => (
+                <span
+                  key={part.key}
+                  className={`dsh-rich-context-part dsh-rich-context-part-${part.key}`}
+                  style={{ width: `${part.tokens / totalParts * 100}%` }}
+                  title={`${part.label} ${formatTokens(part.tokens)}`}
+                />
+              ))}
+            </div>
+            <div className="dsh-rich-context-legend">
+              {parts.filter(part => part.tokens > 0).map(part => (
+                <span key={part.key} className="dsh-rich-context-legend-item">
+                  <i className={`dsh-rich-context-dot dsh-rich-context-dot-${part.key}`} />
+                  {part.label} {formatTokens(part.tokens)}
+                </span>
+              ))}
+            </div>
+          </>
+        )
+        : null}
+      {subagentMs !== undefined && subagentMs > 0
+        ? <div className="dsh-rich-context-sub">{t('ctx.subagent', { duration: formatDuration(subagentMs) })}</div>
+        : null}
+    </div>
+  )
 }
 
 /** Stacked per-turn input/output bars. */
@@ -349,6 +433,16 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   const byId = useSessions(s => s.byId)
   const summary = current === undefined ? undefined : byId[current]
   const usage = summary?.projectionValues?.tokenUsage as TokenUsageProjection | undefined
+  const projectionValues = summary?.projectionValues
+  const pressure = projectionValues?.contextPressure as PressureView | undefined
+  const breakdown = projectionValues?.contextBreakdown as BreakdownView | undefined
+  const subagentMs = (projectionValues?.subagentTiming as { settledMs?: number } | undefined)?.settledMs
+  const ctxPercent = (() => {
+    const used = pressure?.projectedTokens ?? pressure?.pressureTokens
+    const window = pressure?.contextWindow
+    if (used === undefined || window === undefined || window <= 0) return null
+    return Math.min(100, Math.round(used / window * 100))
+  })()
   const steps = (summary?.projectionValues?.sessionStats as { steps?: number } | undefined)?.steps
   const running = summary?.running ?? false
   const [open, setOpen] = useState(false)
@@ -495,6 +589,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       <div className="dsh-rich-hero-sub">
         {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
+      <ContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
       {fold.perTurn.length === 0
         ? null
         : (
@@ -559,21 +654,29 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         onClick={toggle}
       >
         {wide
-          ? null
-          : <span className="dsh-rich-orb-emoji">{rank.level.emoji}</span>}
-        {wide
           ? (
-            <>
-              <span key={tick} className={flash ? 'dsh-rich-trigger-metrics dsh-rich-flash' : 'dsh-rich-trigger-metrics'}>
+            <span className="dsh-rich-badge">
+              <span className="dsh-rich-badge-main">
                 <span className="dsh-rich-trigger-name">{rankName}</span>
-                <span className="dsh-rich-trigger-tokens">{formatTokens(lifetime.total)}</span>
-                <span className="dsh-rich-trigger-cost">{formatCost(sessionCost)}</span>
+                {running ? <StateDot state="ongoing" className="dsh-rich-dot" /> : null}
+                <span className="dsh-rich-chevron">{collapsed ? '▸' : '▾'}</span>
               </span>
-              {running ? <StateDot state="ongoing" className="dsh-rich-dot" /> : null}
-              <span className="dsh-rich-chevron">{collapsed ? '▸' : '▾'}</span>
-            </>
+              <span key={tick} className={flash ? 'dsh-rich-trigger-metrics dsh-rich-flash' : 'dsh-rich-trigger-metrics'}>
+                <span className="dsh-rich-trigger-tokens">{formatTokens(lifetime.total)}</span>
+                <span className="dsh-rich-trigger-sep">·</span>
+                <span className="dsh-rich-trigger-cost">{formatCost(sessionCost)}</span>
+                {ctxPercent === null
+                  ? null
+                  : (
+                    <>
+                      <span className="dsh-rich-trigger-sep">·</span>
+                      <span className="dsh-rich-trigger-context">{t('sec.context')} {ctxPercent}%</span>
+                    </>
+                  )}
+              </span>
+            </span>
           )
-          : null}
+          : <span className="dsh-rich-orb-emoji">{rank.level.emoji}</span>}
       </button>
       {wide
         ? (collapsed ? null : <div className="dsh-rich-inline">{panel}</div>)
