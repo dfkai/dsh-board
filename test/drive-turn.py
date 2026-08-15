@@ -1,8 +1,7 @@
-"""Drive one real conversation turn on 3081 and read the strip afterwards.
+"""Drive one real conversation turn on 3081 and read the usage panel after.
 
 Dev-only: python3 test/drive-turn.py [prompt]
-Proves the projection data path end to end: prompt → model → tokens/steps
-→ host projections → session/projection frames → strip cells.
+Proves the data path end to end: prompt → model → projections/history → panel.
 """
 import sys
 from playwright.sync_api import sync_playwright
@@ -22,18 +21,12 @@ with sync_playwright() as p:
     box.fill(PROMPT)
     box.press('Enter')
     print(f'prompt sent: {PROMPT}')
-    # Poll until the strip reports steps or the budget runs out.
-    deadline = 120_000
-    waited = 0
-    while waited < deadline:
-        page.wait_for_timeout(5000)
-        waited += 5000
-        text = page.locator('.dsh-rich-strip').first.inner_text()
-        if '—' not in text.replace('上下文占用\n—', '') and '轮次 / 步骤\n—' not in text:
-            break
-    print('--- strip text after turn ---')
-    print(page.locator('.dsh-rich-strip').first.inner_text())
-    print(f"--- dots: {page.locator('.dsh-rich-dot').count()} | cells: {page.locator('.dsh-rich-cell').count()} ---")
+    page.wait_for_timeout(28000)
+    page.locator('.dsh-rich-trigger').first.click()
+    page.wait_for_timeout(2500)
+    print('--- panel after turn ---')
+    print(page.locator('.dsh-rich-panel').first.inner_text())
+    print(f"spark bars: {page.locator('.dsh-rich-spark rect').count()}")
     print('--- console errors ---')
     for line in errors[:10]:
         print(line)

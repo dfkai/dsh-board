@@ -1,4 +1,4 @@
-"""Headless visual check of the dsh-rich strip on the webtest instance (3081).
+"""Headless visual check of the dsh-rich sidebar usage entry (3081).
 
 Dev-only: python3 test/e2e.py
 Requires: python3 -m playwright install chromium
@@ -14,17 +14,18 @@ with sync_playwright() as p:
     page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
     page.on('pageerror', lambda e: errors.append(str(e)))
     page.goto(URL, wait_until='domcontentloaded')
-    # The app keeps SSE/WebSocket channels open, so networkidle never fires;
-    # wait a fixed window for the shell to boot and slots to render.
+    # The app keeps SSE/WebSocket channels open, so networkidle never fires.
     page.wait_for_timeout(8000)
-    anchors = page.locator('[data-slot="conversation.input.dock"]').count()
-    strips = page.locator('.dsh-rich-strip').count()
-    cells = page.locator('.dsh-rich-cell').count()
-    print(f'dock anchors: {anchors}, strips: {strips}, cells: {cells}')
-    if strips > 0:
-        text = page.locator('.dsh-rich-strip').first.inner_text()
-        print('--- strip text ---')
-        print(text)
+    triggers = page.locator('.dsh-rich-trigger').count()
+    print(f'triggers: {triggers}')
+    if triggers > 0:
+        page.locator('.dsh-rich-trigger').first.click()
+        page.wait_for_timeout(1500)
+        panel = page.locator('.dsh-rich-panel')
+        print(f'panel: {panel.count()}')
+        if panel.count() > 0:
+            print('--- panel text ---')
+            print(panel.first.inner_text())
     print('--- console errors ---')
     for line in errors[:12]:
         print(line)

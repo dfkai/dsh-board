@@ -1,21 +1,22 @@
-/** dsh-rich browser half: mounts the monitor strip on the input dock slot. */
+/** dsh-rich browser half: a usage/cost entry at the sidebar foot. */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import { RichStrip } from './RichStrip.tsx'
+import { SidebarUsage } from './SidebarUsage.tsx'
 import { injectRichStyles } from './style.ts'
 import { en, NS, zh } from './locales.ts'
 
-/** Services required before the strip can register. */
-export const inject = ['slots', 'locale']
+/** Services required before the entry can register. */
+export const inject = ['slots', 'locale', 'connection']
 
-/** Register the strip on the conversation input dock (above the composer). */
+/** Register the usage trigger beside Settings at the sidebar foot. */
 export function apply(ctx: ClientContext): void {
   injectRichStyles()
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-rich: dictionaries')
-  ctx.effect(() => ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({
-    name: 'conversation.input.dock',
-    id: 'dsh-rich-strip',
-    // Below the shipped readouts; the dock is a list, so every entry coexists.
-    order: 100,
+  ctx.effect(() => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+    name: 'sidebar.footer.action',
+    id: 'dsh-rich-usage',
+    // Beside Settings; the foot list keeps every entry visible.
+    order: 30,
     locale: NS,
-  }, RichStrip)), 'dsh-rich: dock registration')
+    inject: () => ({ api: ctx.connection.api }),
+  }, SidebarUsage)), 'dsh-rich: sidebar usage entry')
 }
