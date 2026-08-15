@@ -19,11 +19,14 @@ const CSS = `
   align-items: center;
   justify-content: center;
   width: 100%;
-  aspect-ratio: 1 / 0.85;
+  aspect-ratio: 1 / 0.58;
   padding: 14px;
   border-radius: 10px;
   border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
-  background: linear-gradient(165deg, color-mix(in srgb, var(--tier, #4d6bfe) 10%, transparent), transparent 55%), var(--dsw-alias-bg-layer-1, #ffffff);
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--tier, #4d6bfe) 32%, transparent), transparent 62%),
+    linear-gradient(220deg, color-mix(in srgb, #22d3ee 18%, transparent), transparent 55%),
+    var(--dsw-alias-bg-layer-1, #ffffff);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   color: var(--dsw-alias-label-primary, #1a1a1a);
   cursor: pointer;
