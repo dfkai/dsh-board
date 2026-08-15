@@ -240,37 +240,6 @@ function SessionRows({ sessions }: {
   )
 }
 
-/** Animated badge centerpiece: today's share of the week sweeps in as a
- *  gradient arc with a slowly orbiting sparkle. */
-function BadgeRing({ share }: { share: number }): JSX.Element {
-  const r = 26
-  const c = 2 * Math.PI * r
-  const pct = Math.max(0, Math.min(1, share))
-  return (
-    <span className="dsh-board-ring">
-      <svg viewBox="0 0 64 64" width={64} height={64} aria-hidden>
-        <defs>
-          <linearGradient id="dsh-board-ring-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--dsw-alias-brand-primary, #4d6bfe)" />
-            <stop offset="100%" stopColor="#22d3ee" />
-          </linearGradient>
-        </defs>
-        <circle className="dsh-board-ring-track" cx={32} cy={32} r={r} />
-        <circle
-          className="dsh-board-ring-fill"
-          cx={32}
-          cy={32}
-          r={r}
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - pct)}
-          transform="rotate(-90 32 32)"
-        />
-      </svg>
-      <span className="dsh-board-ring-label">{Math.round(pct * 100)}%</span>
-    </span>
-  )
-}
-
 /**
  * VIP-style membership card: previous tier (unlocked) → current tier
  * (glowing, tier-colored) → next tier (locked), a flowing progress bar with
@@ -659,13 +628,12 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
             <>
               <span className="dsh-board-badge">
                 <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
-                <BadgeRing share={lifetime.week > 0 ? lifetime.today / lifetime.week : 0} />
-                <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)}</span>
-                <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
                 <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
+                <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
+                <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
+                <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
               </span>
               {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
-              <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
             </>
           )
           : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>}

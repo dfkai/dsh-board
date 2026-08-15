@@ -55,43 +55,9 @@ const CSS = `
   white-space: nowrap;
 }
 .dsh-board-badge-tokens {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: -0.02em;
   color: var(--dsw-alias-label-primary, #1a1a1a);
-  line-height: 1.2;
-}
-.dsh-board-ring {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  margin: 2px 0;
-}
-.dsh-board-ring svg {
-  position: absolute;
-  inset: 0;
-}
-.dsh-board-ring-track {
-  fill: none;
-  stroke: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.08)) 90%, transparent);
-  stroke-width: 3;
-}
-.dsh-board-ring-fill {
-  fill: none;
-  stroke: url(#dsh-board-ring-grad);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-.dsh-board-ring-label {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--dsw-alias-label-secondary, #6b7280);
-  font-variant-numeric: tabular-nums;
 }
 .dsh-board-badge-sub {
   font-size: 11px;
@@ -100,15 +66,14 @@ const CSS = `
   font-variant-numeric: tabular-nums;
 }
 .dsh-board-badge-cost {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--dsw-alias-brand-primary, #4d6bfe);
+  line-height: 1.2;
 }
 .dsh-board-chevron {
-  position: absolute;
-  top: 5px;
-  right: 7px;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--dsw-alias-label-secondary, #6b7280);
 }
 .dsh-board-live-dot {
