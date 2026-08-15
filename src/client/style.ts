@@ -69,16 +69,11 @@ const CSS = `
   color: var(--dsw-alias-label-secondary, #9ca3af);
   font-weight: 400;
 }
-/* 5s presentation refresh pulse + blue flash when the cost changes. */
+/* Blue flash when the badge numbers actually change. */
 .dsh-rich-trigger-metrics {
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
-  animation: dsh-rich-tick 600ms ease;
-}
-@keyframes dsh-rich-tick {
-  0% { opacity: 0.45; transform: translateY(1px); }
-  100% { opacity: 1; transform: none; }
 }
 .dsh-rich-trigger-metrics.dsh-rich-flash {
   color: var(--dsw-alias-brand-primary, #4d6bfe);

@@ -449,9 +449,10 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const [fold, setFold] = useState<HistoryFold>({ perTurn: [], perModel: new Map(), cumulative: [] })
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const panelVisible = wide ? !collapsed : open
 
   useEffect(() => {
-    if (current === undefined) return
+    if (current === undefined || !panelVisible) return
     let cancelled = false
     void (async () => {
       try {
@@ -463,7 +464,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       }
     })()
     return () => { cancelled = true }
-  }, [current, api, open, collapsed, steps])
+  }, [current, api, panelVisible, steps])
 
   useEffect(() => {
     if (!open) return
@@ -533,26 +534,21 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   const rankName = t(`rank.${LEVELS.indexOf(rank.level)}` as RichKey)
   const usageStats = useMemo(() => computeStats(lifetime.daily, ids.length), [lifetime.daily, ids.length])
 
-  // Refresh feel: a visible 5s pulse on the trigger, plus a blue flash
-  // whenever the session cost actually changes (data itself arrives through
-  // live push frames — this is the presentation refresh).
-  const [tick, setTick] = useState(0)
-  useEffect(() => {
-    const timer = setInterval(() => setTick(value => value + 1), 5000)
-    return () => clearInterval(timer)
-  }, [])
+  // Blue flash only when a badge number ACTUALLY changes (push-live data;
+  // no synthetic refresh — large totals need no fake pulses).
   const [flash, setFlash] = useState(false)
-  const prevCostRef = useRef(sessionCost)
+  const prevBadgeRef = useRef({ cost: sessionCost, total: lifetime.total })
   useEffect(() => {
-    if (prevCostRef.current !== sessionCost) {
+    const prev = prevBadgeRef.current
+    if (prev.cost !== sessionCost || prev.total !== lifetime.total) {
       setFlash(true)
       const timer = setTimeout(() => setFlash(false), 700)
-      prevCostRef.current = sessionCost
+      prevBadgeRef.current = { cost: sessionCost, total: lifetime.total }
       return () => clearTimeout(timer)
     }
-    prevCostRef.current = sessionCost
+    prevBadgeRef.current = { cost: sessionCost, total: lifetime.total }
     return undefined
-  }, [sessionCost])
+  }, [sessionCost, lifetime.total])
 
   const toggle = (): void => {
     if (wide) {
@@ -661,7 +657,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
                 {running ? <StateDot state="ongoing" className="dsh-rich-dot" /> : null}
                 <span className="dsh-rich-chevron">{collapsed ? '▸' : '▾'}</span>
               </span>
-              <span key={tick} className={flash ? 'dsh-rich-trigger-metrics dsh-rich-flash' : 'dsh-rich-trigger-metrics'}>
+              <span className={flash ? 'dsh-rich-trigger-metrics dsh-rich-flash' : 'dsh-rich-trigger-metrics'}>
                 <span className="dsh-rich-trigger-tokens">{formatTokens(lifetime.total)}</span>
                 <span className="dsh-rich-trigger-sep">·</span>
                 <span className="dsh-rich-trigger-cost">{formatCost(sessionCost)}</span>
