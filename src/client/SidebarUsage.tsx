@@ -506,9 +506,9 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)).getTime()
     let today = 0
     let week = 0
-    for (const item of daily) {
-      if (item.day === todayMid) today += item.tokens
-      if (item.day >= weekStart && item.day <= todayMid) week += item.tokens
+    for (const [day, tokens] of daily) {
+      if (day === todayMid) today += tokens
+      if (day >= weekStart && day <= todayMid) week += tokens
     }
     return {
       today,
