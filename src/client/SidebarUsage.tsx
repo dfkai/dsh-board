@@ -60,10 +60,6 @@ function SectionTitle({ children }: { children: React.ReactNode }): JSX.Element 
   return <div className="dsh-rich-sec">{children}</div>
 }
 
-function MiniEmpty({ text }: { text: string }): JSX.Element {
-  return <div className="dsh-rich-mini">{text}</div>
-}
-
 /** Stacked per-turn input/output bars. */
 function TrendBars({ data }: { data: readonly TurnUsage[] }): JSX.Element {
   const max = Math.max(1, ...data.map(item => item.input + item.output))
@@ -499,11 +495,11 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       <div className="dsh-rich-hero-sub">
         {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
-      <SectionTitle>{t('sec.trend')}</SectionTitle>
       {fold.perTurn.length === 0
-        ? <MiniEmpty text={t('spark.empty')} />
+        ? null
         : (
           <>
+            <SectionTitle>{t('sec.trend')}</SectionTitle>
             <TrendBars data={fold.perTurn.slice(-24)} />
             <div className="dsh-rich-legend">
               <span><i className="dsh-rich-legend-in" />{t('legend.in')}</span>
@@ -511,28 +507,42 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
             </div>
           </>
         )}
-      <SectionTitle>{t('sec.cumulative')}</SectionTitle>
       {fold.cumulative.length < 2
-        ? <MiniEmpty text={t('spark.empty')} />
-        : <CumulativeArea values={fold.cumulative.slice(-60)} />}
-      <SectionTitle>{t('sec.heat')}</SectionTitle>
-      {lifetime.daily.length === 0
-        ? <MiniEmpty text={t('spark.empty')} />
+        ? null
         : (
           <>
+            <SectionTitle>{t('sec.cumulative')}</SectionTitle>
+            <CumulativeArea values={fold.cumulative.slice(-60)} />
+          </>
+        )}
+      {lifetime.daily.length === 0
+        ? null
+        : (
+          <>
+            <SectionTitle>{t('sec.heat')}</SectionTitle>
             <Heatmap daily={lifetime.daily} />
             <div className="dsh-rich-heat-note">{t('heat.note')}</div>
           </>
         )}
       <MembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
-      <SectionTitle>{t('sec.model')}</SectionTitle>
-      {models.length === 0 ? <MiniEmpty text={t('spark.empty')} /> : <ModelRows models={models} t={t} />}
+      {models.length === 0
+        ? null
+        : (
+          <>
+            <SectionTitle>{t('sec.model')}</SectionTitle>
+            <ModelRows models={models} t={t} />
+          </>
+        )}
       <SectionTitle>{t('sec.achievements')}</SectionTitle>
       <Achievements stats={usageStats} t={t} />
-      <SectionTitle>{t('sec.global')}</SectionTitle>
       {lifetime.sessions.length === 0
-        ? <MiniEmpty text={t('spark.empty')} />
-        : <SessionRows sessions={lifetime.sessions} />}
+        ? null
+        : (
+          <>
+            <SectionTitle>{t('sec.global')}</SectionTitle>
+            <SessionRows sessions={lifetime.sessions} />
+          </>
+        )}
       <div className="dsh-rich-note">
         {t('note.pricing')} · {isPeakHour() ? t('window.peak') : t('window.offpeak')}
       </div>

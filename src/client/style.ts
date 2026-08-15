@@ -107,8 +107,18 @@ const CSS = `
   box-shadow: none;
   border: none;
   padding: 10px 0;
-  max-height: none;
-  overflow: visible;
+  max-height: min(60vh, 560px);
+  overflow-y: auto;
+}
+.dsh-rich-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.dsh-rich-panel::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.15)) 70%, transparent);
+  border-radius: 999px;
+}
+.dsh-rich-panel::-webkit-scrollbar-track {
+  background: transparent;
 }
 .dsh-rich-float .dsh-rich-panel {
   position: absolute;
