@@ -537,18 +537,18 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
   // Blue flash only when a badge number ACTUALLY changes (push-live data;
   // no synthetic refresh — large totals need no fake pulses).
   const [flash, setFlash] = useState(false)
-  const prevBadgeRef = useRef({ cost: sessionCost, total: lifetime.total })
+  const prevBadgeRef = useRef({ cost: lifetime.cost, total: lifetime.total })
   useEffect(() => {
     const prev = prevBadgeRef.current
-    if (prev.cost !== sessionCost || prev.total !== lifetime.total) {
+    if (prev.cost !== lifetime.cost || prev.total !== lifetime.total) {
       setFlash(true)
       const timer = setTimeout(() => setFlash(false), 700)
-      prevBadgeRef.current = { cost: sessionCost, total: lifetime.total }
+      prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total }
       return () => clearTimeout(timer)
     }
-    prevBadgeRef.current = { cost: sessionCost, total: lifetime.total }
+    prevBadgeRef.current = { cost: lifetime.cost, total: lifetime.total }
     return undefined
-  }, [sessionCost, lifetime.total])
+  }, [lifetime.cost, lifetime.total])
 
   const toggle = (): void => {
     if (wide) {
@@ -651,26 +651,15 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       >
         {wide
           ? (
-            <span className="dshboard-badge">
-              <span className="dshboard-badge-main">
-                <span className="dshboard-trigger-name">{rankName}</span>
-                {running ? <StateDot state="ongoing" className="dshboard-dot" /> : null}
-                <span className="dshboard-chevron">{collapsed ? '▸' : '▾'}</span>
+            <>
+              <span className={flash ? 'dshboard-badge dshboard-flash' : 'dshboard-badge'}>
+                <span className="dshboard-tag" style={{ background: rank.level.color }}>{rankName}</span>
+                <span className="dshboard-badge-tokens">{formatTokens(lifetime.total)}</span>
+                <span className="dshboard-badge-cost">{formatCost(lifetime.cost)}</span>
               </span>
-              <span className={flash ? 'dshboard-trigger-metrics dshboard-flash' : 'dshboard-trigger-metrics'}>
-                <span className="dshboard-trigger-tokens">{formatTokens(lifetime.total)}</span>
-                <span className="dshboard-trigger-sep">·</span>
-                <span className="dshboard-trigger-cost">{formatCost(sessionCost)}</span>
-                {ctxPercent === null
-                  ? null
-                  : (
-                    <>
-                      <span className="dshboard-trigger-sep">·</span>
-                      <span className="dshboard-trigger-context">{t('sec.context')} {ctxPercent}%</span>
-                    </>
-                  )}
-              </span>
-            </span>
+              {running ? <StateDot state="ongoing" className="dshboard-live-dot" /> : null}
+              <span className="dshboard-chevron">{collapsed ? '▸' : '▾'}</span>
+            </>
           )
           : <span className="dshboard-orb-emoji">{rank.level.emoji}</span>}
       </button>

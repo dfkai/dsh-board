@@ -11,80 +11,73 @@ const CSS = `
   position: relative;
 }
 
-/* Trigger: a quiet, app-native entry row. */
+/* Trigger: a near-square stat tile. */
 .dshboard-trigger {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 10px;
+  justify-content: center;
+  padding: 10px 14px 12px;
+  min-width: 100px;
+  border-radius: 14px;
   border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
-  background: transparent;
+  background: var(--dsw-alias-bg-layer-1, #ffffff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   color: var(--dsw-alias-label-primary, #1a1a1a);
-  font-size: 13px;
-  line-height: 1.4;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
-  transition: background 150ms ease;
+  transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .dshboard-trigger:hover {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, rgba(0, 0, 0, 0.04)) 70%, transparent);
-}
-.dshboard-trigger-rank {
-  font-size: 13px;
-  line-height: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+  transform: translateY(-1px);
 }
 .dshboard-badge {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  align-items: flex-start;
-}
-.dshboard-badge-main {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-}
-.dshboard-trigger-name {
-  color: var(--dsw-alias-label-primary, #1a1a1a);
-  font-weight: 700;
-  font-size: 14px;
-}
-.dshboard-trigger-tokens {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--dsw-alias-label-primary, #1a1a1a);
-}
-.dshboard-trigger-cost {
-  color: var(--dsw-alias-brand-primary, #4d6bfe);
-  font-weight: 700;
-  font-size: 15px;
-}
-.dshboard-trigger-context {
-  color: var(--dsw-alias-label-secondary, #6b7280);
-  font-weight: 600;
-  font-size: 13px;
-}
-.dshboard-trigger-sep {
-  color: var(--dsw-alias-label-secondary, #9ca3af);
-  font-weight: 400;
-}
-/* Blue flash when the badge numbers actually change. */
-.dshboard-trigger-metrics {
-  display: inline-flex;
-  align-items: baseline;
   gap: 5px;
 }
-.dshboard-trigger-metrics.dshboard-flash {
+/* Rank title: a tier-colored pill tag with white text. */
+.dshboard-tag {
+  padding: 2px 10px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+.dshboard-badge-tokens {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--dsw-alias-label-primary, #1a1a1a);
+  line-height: 1.2;
+}
+.dshboard-badge-cost {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--dsw-alias-brand-primary, #4d6bfe);
 }
+.dshboard-badge.dshboard-flash {
+  animation: dshboard-badge-flash 700ms ease;
+}
+@keyframes dshboard-badge-flash {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
 .dshboard-chevron {
-  font-size: 12px;
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 9px;
   color: var(--dsw-alias-label-secondary, #6b7280);
 }
-.dshboard-dot {
+.dshboard-live-dot {
+  position: absolute;
+  top: 6px;
+  left: 7px;
   line-height: 0;
-  display: inline-flex;
 }
 /* Rail: a plain circular entry. */
 .dshboard-orb {

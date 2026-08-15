@@ -15,16 +15,16 @@ export interface RankLevel {
 }
 
 export const LEVELS: readonly RankLevel[] = [
-  { floor: 0, emoji: '🐣', zh: '词芽未醒', en: 'Unawakened Sprout', color: '#9b96b8' },
+  { floor: 0, emoji: '🌱', zh: '词芽未醒', en: 'Unawakened Sprout', color: '#9b96b8' },
   { floor: 10_000, emoji: '🥉', zh: '词徒', en: 'Word Apprentice', color: '#cd7f32' },
-  { floor: 100_000, emoji: '🥈', zh: '白银话痨', en: 'Silver Chatterbox', color: '#c0c8d0' },
-  { floor: 1_000_000, emoji: '🥇', zh: '百万词翁', en: 'Token Millionaire', color: '#ffd166' },
-  { floor: 10_000_000, emoji: '💎', zh: '万词王', en: 'Wordlord', color: '#7c5cff' },
-  { floor: 100_000_000, emoji: '🚀', zh: '亿词小目标', en: 'The Billion-Token Small Goal', color: '#ff5c7a' },
-  { floor: 1_000_000_000, emoji: '👑', zh: '十亿词霸', en: 'Billion-Token Wordmaster', color: '#ff9f43' },
-  { floor: 10_000_000_000, emoji: '🐲', zh: '百亿词圣', en: 'Hundred-Billion Word Saint', color: '#00c2ff' },
-  { floor: 100_000_000_000, emoji: '🌌', zh: '千亿词仙', en: 'Trillion Word Immortal', color: '#b06cff' },
-  { floor: 1_000_000_000_000, emoji: '⚡', zh: '万亿词神', en: 'Ten-Trillion Word God', color: '#ffd166' },
+  { floor: 100_000, emoji: '💬', zh: '白银话痨', en: 'Silver Chatterbox', color: '#8b95a1' },
+  { floor: 1_000_000, emoji: '💰', zh: '百万词翁', en: 'Token Millionaire', color: '#d4a017' },
+  { floor: 10_000_000, emoji: '🧲', zh: '万词王', en: 'Wordlord', color: '#7c3aed' },
+  { floor: 100_000_000, emoji: '🎯', zh: '亿词小目标', en: 'The Billion-Token Small Goal', color: '#ef4444' },
+  { floor: 1_000_000_000, emoji: '👑', zh: '十亿词霸', en: 'Billion-Token Wordmaster', color: '#f97316' },
+  { floor: 10_000_000_000, emoji: '📜', zh: '百亿词圣', en: 'Hundred-Billion Word Saint', color: '#0891b2' },
+  { floor: 100_000_000_000, emoji: '🧚', zh: '千亿词仙', en: 'Trillion Word Immortal', color: '#a855f7' },
+  { floor: 1_000_000_000_000, emoji: '⚡', zh: '万亿词神', en: 'Ten-Trillion Word God', color: '#ca8a04' },
 ]
 
 /** The active level for a lifetime token total. */
