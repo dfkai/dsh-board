@@ -619,6 +619,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       <button
         type="button"
         className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
+        style={{ '--tier': rank.level.color } as never}
         aria-expanded={wide ? !collapsed : open}
         title={rankName}
         onClick={toggle}
