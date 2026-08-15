@@ -375,7 +375,8 @@ function Achievements({ stats, t }: {
 
 /**
  * Sidebar foot entry: a live usage console next to Settings. Wide sidebar:
- * panel floats upward above the badge (height-capped, scrolls internally),
+ * the badge rides up to the top of the expanded unit and the panel hangs
+ * beneath it, anchored at the foot (height-capped, scrolls internally),
  * expanded by default, collapsible (persisted). Rail: icon + popup. Data: current-session projections from the session-list
  * store, per-turn/per-model series folded from the history RPC, and a
  * lifetime aggregate across every session row.
@@ -616,34 +617,53 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     </div>
   )
 
+  const badgeInner = wide
+    ? (
+      <>
+        <span className="dsh-board-badge">
+          <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
+          <span className="dsh-board-badge-nums">
+            <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
+            <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
+          </span>
+          <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
+          <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
+        </span>
+        {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
+      </>
+    )
+    : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>
+
+  const triggerButton = (
+    <button
+      type="button"
+      className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
+      style={{ '--tier': rank.level.color } as never}
+      aria-expanded={wide ? !collapsed : open}
+      title={rankName}
+      onClick={toggle}
+    >
+      {badgeInner}
+    </button>
+  )
+
   return (
     <div ref={rootRef} className={wide ? 'dsh-board-foot dsh-board-wide' : 'dsh-board-foot'}>
-      <button
-        type="button"
-        className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
-        style={{ '--tier': rank.level.color } as never}
-        aria-expanded={wide ? !collapsed : open}
-        title={rankName}
-        onClick={toggle}
-      >
-        {wide
-          ? (
-            <>
-              <span className="dsh-board-badge">
-                <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
-                <span className="dsh-board-badge-nums">
-                  <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
-                  <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
-                </span>
-                <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
-                <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
-              </span>
-              {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
-            </>
-          )
-          : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>}
-      </button>
-      {panelVisible ? <div className="dsh-board-float">{panel}</div> : null}
+      {wide
+        ? (collapsed
+          ? triggerButton
+          : (
+            <div className="dsh-board-float dsh-board-open">
+              {triggerButton}
+              {panel}
+            </div>
+          ))
+        : (
+          <>
+            {triggerButton}
+            {open ? <div className="dsh-board-float">{panel}</div> : null}
+          </>
+        )}
     </div>
   )
 })

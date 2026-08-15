@@ -136,11 +136,29 @@ const CSS = `
   left: 0;
   z-index: 60;
 }
-/* Wide sidebar: fill the column width and cap the rise so the session
-   list above stays visible; the rest scrolls inside the panel. */
-.dsh-board-wide .dsh-board-float .dsh-board-panel {
+/* Wide sidebar, expanded: one unit anchored at the foot — the badge
+   rides up to the top, the panel hangs beneath it with a capped height
+   and internal scroll so the session list above stays reachable. */
+.dsh-board-open {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  max-height: min(52vh, 400px);
+  z-index: 60;
+}
+.dsh-board-open .dsh-board-trigger {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+}
+.dsh-board-open .dsh-board-panel {
+  position: static;
+  width: 100%;
+  max-height: min(44vh, 300px);
+  overflow-y: auto;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 .dsh-board-panel-title {
   display: flex;
