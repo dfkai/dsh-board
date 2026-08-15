@@ -15,13 +15,13 @@ const CSS = `
 .dsh-rich-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 10px;
   border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
   background: transparent;
   color: var(--dsw-alias-label-primary, #1a1a1a);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
@@ -37,14 +37,16 @@ const CSS = `
 .dsh-rich-trigger-name {
   color: var(--dsw-alias-label-secondary, #6b7280);
   font-weight: 600;
+  font-size: 13px;
 }
 .dsh-rich-trigger-tokens {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--dsw-alias-label-primary, #1a1a1a);
 }
 .dsh-rich-trigger-cost {
   color: var(--dsw-alias-label-secondary, #6b7280);
-  font-size: 11px;
+  font-size: 12px;
 }
 /* 5s presentation refresh pulse + blue flash when the cost changes. */
 .dsh-rich-trigger-metrics {
@@ -61,7 +63,7 @@ const CSS = `
   color: var(--dsw-alias-brand-primary, #4d6bfe);
 }
 .dsh-rich-chevron {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dsw-alias-label-secondary, #6b7280);
 }
 .dsh-rich-dot {
@@ -70,8 +72,8 @@ const CSS = `
 }
 /* Rail: a plain circular entry. */
 .dsh-rich-orb {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border-radius: 50%;
   justify-content: center;
@@ -79,7 +81,7 @@ const CSS = `
   border: 1px solid var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.08));
 }
 .dsh-rich-orb-emoji {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
 }
 
