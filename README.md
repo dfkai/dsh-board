@@ -1,12 +1,17 @@
 # dsh-rich
 
-给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在**左侧 sidebar 脚部**（Settings 旁）加一个「用量」入口——对齐 DeepSeek 后台使用统计，把三个官方没有的东西放进你的 web：
+给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在**左侧 sidebar 脚部**（Settings 旁）加一个「⚡ 用量」统计台——对齐 DeepSeek 后台使用统计，把官方 UI 没有的统计感、实时感、游戏感放进你的 web：
 
-- **计费**——按 `tokenUsage` 投影 × 价格表估算本会话成本（hero 大数字，触发按钮上实时显示 ¥ 金额）；
-- **token 消耗**——输入（含缓存命中率）/ 输出 / 合计；
-- **每轮输出走势**——`session.history` RPC 折叠 `assistant/chunk` usage 事件，最近 24 轮的迷你柱状图。
+- **🏆 中二段位**——跨会话累计 token 计算段位（🐣 初生码芽 → 🥉 青铜打字机 → … → 👑 十亿词帝），带升级进度条和「距下一级还差 X token」；
+- **亿级刺激数字**——渐变 hero 大字滚动计数（万/亿 单位），「跨 N 个会话 · 总成本 ¥X」；
+- **💰 本会话计费**——token 投影 × 价格表（[`pricing.ts`](./src/client/pricing.ts)，默认 deepseek-chat 公开价，纯估算），输入（含缓存命中率）/ 输出 / 合计 / 成本；
+- **🧮 分模型统计**——`session.history` 折叠 `request/header` + usage 事件，每个模型的输入/输出与占比条；
+- **📈 每轮走势**（输入/输出堆叠柱）+ **📉 累计输出曲线**（渐变面积图）；
+- **🌌 全局会话榜**——所有会话的 token 排名条形图；
+- **实时感**——运行中显示 LIVE 徽章 + 呼吸圆点，数字随流式实时跳动；
+- **默认展开、可折叠**——宽栏内联面板（折叠状态本地持久化），窄栏 ¥ 图标 + 浮层。
 
-点击触发按钮向上弹出面板；价格表在 [`src/client/pricing.ts`](./src/client/pricing.ts)（默认 deepseek-chat 公开价，**纯估算、非计费依据**）。
+零宿主代码、零存储：数据全走公开 seam（session-list store 的 `projectionValues` + `session.history` RPC）。
 
 全部数据来自宿主**已有的会话投影**（`tokenUsage` / `contextPressure` / `sessionStats`）：本插件零宿主逻辑、零 RPC、零存储，浏览器半通过框架的 per-session 投影座读取，挂载在 `conversation.input.dock` slot（composer 上方的整行 list 位，与官方读数共存）。
 

@@ -2,13 +2,16 @@
 
 ## v0.1.0 — 2026-08-15
 
-首个版本：**sidebar 脚部的用量面板**（对齐 DeepSeek 后台使用统计，官方 UI 没有的增量）：
+首个版本：**sidebar 脚部的「⚡ 用量」统计台**（默认展开、可折叠，宽栏内联 / 窄栏浮层）：
 
-- **计费**——`tokenUsage` 投影 × 可调价格表（`src/client/pricing.ts`，默认 deepseek-chat 公开价），hero 大数字 + 触发按钮实时 ¥ 金额
-- **token 消耗**——输入（含缓存命中率）/ 输出 / 合计
-- **每轮输出走势**——`session.history` RPC 折叠 `assistant/chunk` usage 事件 → 最近 24 轮迷你柱状图（SVG，零依赖）
-- 挂载 `sidebar.footer.action`（Settings 旁，宽栏显示 `用量 ¥X.XX`，窄栏 `¥`），点击向上弹出
-- 主题 token 自适应；中英双语；root 级 slot 数据路径（session-list store 的 `projectionValues` + history RPC）
+- **🏆 中二段位**：7 级 ladder（🐣→👑），跨会话累计 token 定级 + 升级进度条
+- **亿级 hero**：渐变大字滚动计数（万/亿），「跨 N 个会话 · 总成本 ¥X」
+- **💰 本会话**：成本 / 输入（含缓存命中率）/ 输出 / 合计（tokenUsage 投影 × pricing.ts）
+- **🧮 分模型**：history 折叠 `request/header` + `assistant/chunk` usage → 每模型输入/输出 + 占比条
+- **📈 每轮走势**（入/出堆叠柱）+ **📉 累计输出曲线**（SVG 渐变面积，零依赖）
+- **🌌 全局会话榜**：全部会话 token 排名条形图
+- **实时感**：LIVE 徽章 + StateDot 呼吸点 + 数字随流式跳动
+- 主题 token 自适应、中英双语、折叠状态 localStorage 持久化
 - 开发循环：`pnpm build` + `pnpm sync -- <profile>`（HMR 热刷）；headless 验证脚本（`test/e2e.py`、`test/drive-turn.py`）
 
-架构承诺：**零宿主代码、零存储**——宿主半是空 `apply` 的受治理条目；数据全走公开 seam（会话投影 + session-list store + `session.history` RPC）。
+架构承诺：**零宿主代码、零存储**——宿主半是空 `apply` 的受治理条目；数据全走公开 seam（session-list store 投影 + `session.history` RPC）。
