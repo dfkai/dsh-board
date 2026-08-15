@@ -45,8 +45,9 @@ const CSS = `
   color: var(--dsw-alias-label-primary, #1a1a1a);
 }
 .dsh-rich-trigger-cost {
-  color: var(--dsw-alias-label-secondary, #6b7280);
-  font-size: 12px;
+  color: var(--dsw-alias-brand-primary, #4d6bfe);
+  font-weight: 700;
+  font-size: 15px;
 }
 /* 5s presentation refresh pulse + blue flash when the cost changes. */
 .dsh-rich-trigger-metrics {
@@ -369,6 +370,10 @@ const CSS = `
 .dsh-rich-row-value {
   color: var(--dsw-alias-label-primary, #1a1a1a);
   font-variant-numeric: tabular-nums;
+}
+.dsh-rich-row-value-emphasis {
+  font-weight: 700;
+  color: var(--dsw-alias-brand-primary, #4d6bfe);
 }
 .dsh-rich-row-sub {
   font-size: 10.5px;

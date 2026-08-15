@@ -64,12 +64,12 @@ function MiniEmpty({ text }: { text: string }): JSX.Element {
   return <div className="dsh-rich-mini">{text}</div>
 }
 
-function Row({ label, value, sub }: { label: string; value: string; sub?: string }): JSX.Element {
+function Row({ label, value, sub, emphasis = false }: { label: string; value: string; sub?: string; emphasis?: boolean }): JSX.Element {
   return (
     <div className="dsh-rich-row">
       <span className="dsh-rich-row-label">{label}</span>
       <span className="dsh-rich-row-end">
-        <span className="dsh-rich-row-value">{value}</span>
+        <span className={emphasis ? 'dsh-rich-row-value dsh-rich-row-value-emphasis' : 'dsh-rich-row-value'}>{value}</span>
         {sub === undefined ? null : <span className="dsh-rich-row-sub">{sub}</span>}
       </span>
     </div>
@@ -519,7 +519,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
         ? <MiniEmpty text={t('spark.empty')} />
         : (
           <div className="dsh-rich-rows">
-            <Row label={t('tokens.cost')} value={formatCost(sessionCost)} />
+            <Row label={t('tokens.cost')} value={formatCost(sessionCost)} emphasis />
             <Row
               label={t('tokens.in')}
               value={formatTokens(totalIn)}
