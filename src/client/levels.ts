@@ -11,13 +11,15 @@ export interface RankLevel {
 }
 
 export const LEVELS: readonly RankLevel[] = [
-  { floor: 0, emoji: '🐣', zh: '初生码芽', en: 'Token Sprout' },
-  { floor: 10_000, emoji: '🥉', zh: '青铜打字机', en: 'Bronze Typist' },
-  { floor: 100_000, emoji: '🥈', zh: '白银话痨', en: 'Silver Chatter' },
+  { floor: 0, emoji: '🐣', zh: '词芽未醒', en: 'Unawakened Sprout' },
+  { floor: 10_000, emoji: '🥉', zh: '打字机学徒', en: 'Typist Apprentice' },
+  { floor: 100_000, emoji: '🥈', zh: '白银话痨', en: 'Silver Chatterbox' },
   { floor: 1_000_000, emoji: '🥇', zh: '黄金炼丹师', en: 'Gold Alchemist' },
   { floor: 10_000_000, emoji: '💎', zh: '钻石词匠', en: 'Diamond Wordsmith' },
   { floor: 100_000_000, emoji: '🚀', zh: '星际词王', en: 'Interstellar Wordlord' },
   { floor: 1_000_000_000, emoji: '👑', zh: '十亿词帝', en: 'Billion-Token Emperor' },
+  { floor: 10_000_000_000, emoji: '🐲', zh: '百亿言灵龙', en: 'Hundred-Billion Wordwyrm' },
+  { floor: 100_000_000_000, emoji: '🌌', zh: '千亿创世者', en: 'Trillion Genesis' },
 ]
 
 /** The active level for a lifetime token total. */

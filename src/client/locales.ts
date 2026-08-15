@@ -28,13 +28,18 @@ export const zh = {
   'model.value': '出 {out} · 入 {in}',
   'spark.empty': '暂无数据',
   'note.pricing': '按 deepseek-chat 公开价估算，可在 pricing.ts 调整',
-  'rank.0': '🐣 初生码芽',
-  'rank.1': '🥉 青铜打字机',
+  'rank.0': '🐣 词芽未醒',
+  'rank.1': '🥉 打字机学徒',
   'rank.2': '🥈 白银话痨',
   'rank.3': '🥇 黄金炼丹师',
   'rank.4': '💎 钻石词匠',
   'rank.5': '🚀 星际词王',
   'rank.6': '👑 十亿词帝',
+  'rank.7': '🐲 百亿言灵龙',
+  'rank.8': '🌌 千亿创世者',
+  'panel.collapse.aria': '收起面板',
+  'sec.heat': '每日热力',
+  'heat.note': '按会话最近活跃日归集',
 } as const
 
 export const en: Record<RichKey, string> = {
@@ -62,13 +67,18 @@ export const en: Record<RichKey, string> = {
   'model.value': 'out {out} · in {in}',
   'spark.empty': 'No data yet',
   'note.pricing': 'Estimated from public deepseek-chat prices; edit pricing.ts',
-  'rank.0': '🐣 Token Sprout',
-  'rank.1': '🥉 Bronze Typist',
-  'rank.2': '🥈 Silver Chatter',
+  'rank.0': '🐣 Unawakened Sprout',
+  'rank.1': '🥉 Typist Apprentice',
+  'rank.2': '🥈 Silver Chatterbox',
   'rank.3': '🥇 Gold Alchemist',
   'rank.4': '💎 Diamond Wordsmith',
   'rank.5': '🚀 Interstellar Wordlord',
   'rank.6': '👑 Billion-Token Emperor',
+  'rank.7': '🐲 Hundred-Billion Wordwyrm',
+  'rank.8': '🌌 Trillion Genesis',
+  'panel.collapse.aria': 'Collapse panel',
+  'sec.heat': 'Daily heat',
+  'heat.note': 'grouped by last activity day',
 }
 
 /** Key domain of the `rich` namespace. */

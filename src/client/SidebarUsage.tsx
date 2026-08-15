@@ -142,6 +142,37 @@ function ModelRows({ models, t }: {
   )
 }
 
+/** GitHub-style daily token heatmap: 12 weeks × 7 days. */
+function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] }): JSX.Element {
+  const weeks = 12
+  const rows = 7
+  const cell = 8
+  const gap = 2
+  const now = new Date()
+  const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const start = todayMid - (weeks * rows - 1) * 86_400_000
+  const byDay = new Map(daily.map(item => [item.day, item.tokens]))
+  const max = Math.max(1, ...daily.map(item => item.tokens))
+  const width = weeks * (cell + gap) - gap
+  const height = rows * (cell + gap) - gap
+  return (
+    <svg className="dsh-rich-heatmap" viewBox={`0 0 ${width} ${height}`} width={width} height={height} aria-hidden>
+      {Array.from({ length: weeks * rows }, (_, i) => {
+        const day = start + i * 86_400_000
+        const tokens = byDay.get(day) ?? 0
+        const level = tokens === 0 ? 0 : Math.max(1, Math.min(5, Math.ceil(tokens / max * 5)))
+        const x = Math.floor(i / rows) * (cell + gap)
+        const y = (i % rows) * (cell + gap)
+        return (
+          <rect key={day} className={`dsh-rich-heat-l${level}`} x={x} y={y} width={cell} height={cell} rx={2}>
+            <title>{`${new Date(day).toLocaleDateString()} · ${tokens} token`}</title>
+          </rect>
+        )
+      })}
+    </svg>
+  )
+}
+
 function SessionRows({ sessions }: {
   sessions: readonly { id: string; title: string; tokens: number }[]
 }): JSX.Element {
@@ -214,6 +245,7 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     let output = 0
     let cost = 0
     const sessions: { id: string; title: string; tokens: number }[] = []
+    const daily = new Map<number, number>()
     for (const id of ids) {
       const row = byId[id]
       const u = row?.projectionValues?.tokenUsage
@@ -224,9 +256,20 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       output += o
       cost += estimateCost(u)
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
+      if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
+        const day = new Date(row.updatedAt).setHours(0, 0, 0, 0)
+        daily.set(day, (daily.get(day) ?? 0) + i + o)
+      }
     }
     sessions.sort((left, right) => right.tokens - left.tokens)
-    return { input, output, cost, total: input + output, sessions: sessions.slice(0, 8) }
+    return {
+      input,
+      output,
+      cost,
+      total: input + output,
+      sessions: sessions.slice(0, 8),
+      daily: [...daily.entries()].map(([day, tokens]) => ({ day, tokens })),
+    }
   }, [ids, byId])
 
   const models = useMemo(() => [...fold.perModel.entries()]
@@ -267,9 +310,19 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     <div className="dsh-rich-panel">
       <div className="dsh-rich-panel-title">
         <span>⚡ {t('panel.title')}</span>
-        {running
-          ? <span className="dsh-rich-live"><StateDot state="ongoing" className="dsh-rich-dot" />{t('live')}</span>
-          : null}
+        <span className="dsh-rich-title-right">
+          {running
+            ? <span className="dsh-rich-live"><StateDot state="ongoing" className="dsh-rich-dot" />{t('live')}</span>
+            : null}
+          <button
+            type="button"
+            className="dsh-rich-close"
+            aria-label={t('panel.collapse.aria')}
+            onClick={() => { if (wide) setCollapsed(true); else setOpen(false) }}
+          >
+            ✕
+          </button>
+        </span>
       </div>
       <SectionTitle emoji="🏆">{t('rank.title')}</SectionTitle>
       <div className="dsh-rich-rank">
@@ -322,6 +375,15 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
       {fold.cumulative.length < 2
         ? <MiniEmpty text={t('spark.empty')} />
         : <CumulativeArea values={fold.cumulative.slice(-60)} />}
+      <SectionTitle emoji="📅">{t('sec.heat')}</SectionTitle>
+      {lifetime.daily.length === 0
+        ? <MiniEmpty text={t('spark.empty')} />
+        : (
+          <>
+            <Heatmap daily={lifetime.daily} />
+            <div className="dsh-rich-heat-note">{t('heat.note')}</div>
+          </>
+        )}
       <SectionTitle emoji="🌌">{t('sec.global')}</SectionTitle>
       {lifetime.sessions.length === 0
         ? <MiniEmpty text={t('spark.empty')} />

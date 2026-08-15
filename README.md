@@ -2,14 +2,15 @@
 
 给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 Web client 面板组合包（bundle）：在**左侧 sidebar 脚部**（Settings 旁）加一个「⚡ 用量」统计台——对齐 DeepSeek 后台使用统计，把官方 UI 没有的统计感、实时感、游戏感放进你的 web：
 
-- **🏆 中二段位**——跨会话累计 token 计算段位（🐣 初生码芽 → 🥉 青铜打字机 → … → 👑 十亿词帝），带升级进度条和「距下一级还差 X token」；
+- **🏆 中二段位**——跨会话累计 token 计算段位（🐣 词芽未醒 → 🥉 打字机学徒 → … → 🐲 百亿言灵龙 → 🌌 千亿创世者，9 级），带升级进度条和「距下一级还差 X token」；
 - **亿级刺激数字**——渐变 hero 大字滚动计数（万/亿 单位），「跨 N 个会话 · 总成本 ¥X」；
 - **💰 本会话计费**——token 投影 × 价格表（[`pricing.ts`](./src/client/pricing.ts)，默认 deepseek-chat 公开价，纯估算），输入（含缓存命中率）/ 输出 / 合计 / 成本；
 - **🧮 分模型统计**——`session.history` 折叠 `request/header` + usage 事件，每个模型的输入/输出与占比条；
 - **📈 每轮走势**（输入/输出堆叠柱）+ **📉 累计输出曲线**（渐变面积图）；
+- **📅 每日热力图**——GitHub 风格 12 周 × 7 天 token 格子，哪天用了多少一眼可见；
 - **🌌 全局会话榜**——所有会话的 token 排名条形图；
 - **实时感**——运行中显示 LIVE 徽章 + 呼吸圆点，数字随流式实时跳动；
-- **默认展开、可折叠**——宽栏内联面板（折叠状态本地持久化），窄栏 ¥ 图标 + 浮层。
+- **默认展开、可折叠**——宽栏内联面板（顶部 ✕ 收起按钮，折叠状态本地持久化），窄栏 ⚡ 图标 + 自下而上的浮层（限高不遮对话）。
 
 零宿主代码、零存储：数据全走公开 seam（session-list store 的 `projectionValues` + `session.history` RPC）。
 
