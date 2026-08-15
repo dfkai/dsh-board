@@ -18,14 +18,16 @@ with sync_playwright() as p:
     page.wait_for_timeout(8000)
     triggers = page.locator('.dsh-rich-trigger').count()
     print(f'triggers: {triggers}')
-    if triggers > 0:
-        page.locator('.dsh-rich-trigger').first.click()
-        page.wait_for_timeout(1500)
-        panel = page.locator('.dsh-rich-panel')
-        print(f'panel: {panel.count()}')
-        if panel.count() > 0:
-            print('--- panel text ---')
-            print(panel.first.inner_text())
+    # Wide mode: the inline panel is expanded by default (no click needed).
+    panel = page.locator('.dsh-rich-inline .dsh-rich-panel')
+    print(f'inline panel (default open): {panel.count()}')
+    if panel.count() > 0:
+        print('--- panel text (head) ---')
+        print('\n'.join(panel.first.inner_text().splitlines()[:10]))
+    # Trigger toggles collapse in wide mode.
+    page.locator('.dsh-rich-trigger').first.click()
+    page.wait_for_timeout(500)
+    print(f'after trigger click (collapsed): {panel.count()}')
     print('--- console errors ---')
     for line in errors[:12]:
         print(line)
