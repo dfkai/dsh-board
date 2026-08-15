@@ -3,7 +3,7 @@ import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
-import { estimateCost } from './pricing.ts'
+import { estimateCost, priceFor } from './pricing.ts'
 import { foldHistory, formatCost, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 
@@ -277,7 +277,20 @@ export function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): 
     .sort((left, right) => right.output - left.output)
     .slice(0, 5), [fold])
 
-  const sessionCost = usage === undefined ? 0 : estimateCost(usage)
+  /** The model with the most output this session — prices its billing. */
+  const dominantModel = useMemo(() => {
+    let best: string | undefined
+    let bestOutput = -1
+    for (const [model, m] of fold.perModel) {
+      if (m.output > bestOutput) {
+        bestOutput = m.output
+        best = model
+      }
+    }
+    return best
+  }, [fold])
+
+  const sessionCost = usage === undefined ? 0 : estimateCost(usage, priceFor(dominantModel))
   const totalIn = usage === undefined ? 0 : usage.uncachedInputTokens + usage.cacheReadTokens + usage.cacheWriteTokens
   const totalTokens = totalIn + (usage?.outputTokens ?? 0)
   const cacheHitPercent = totalIn === 0 ? null : Math.round((usage?.cacheReadTokens ?? 0) / totalIn * 100)
