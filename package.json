@@ -16,6 +16,7 @@
   "files": [
     "lib/index.js",
     "lib/client.js",
+    "assets/demo.gif",
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",
