@@ -2,7 +2,7 @@
 
 给 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness) 的 **侧栏用量面板**：把 DeepSeek 后台的用量统计装进你的 Web UI 左下角。
 
-![dsh-board demo](assets/demo.gif)
+![dsh-board demo](https://cdn.jsdelivr.net/gh/dfkai/dsh-board@6d84d5d/assets/demo.gif)
 
 - **💰 计费**——官方价目（2026-08-17 起按北京时间 **峰谷自动切价**：高峰 9–12、14–18，闲时半价）；本会话按主导模型计价，累计成本按各会话活跃时刻 + 默认模型估算（口径见 FAQ）；
 - **🧠 1M 上下文**——占用 %、剩余预算、以及「谁在吃窗口」（系统/工具/消息构成堆叠条）；
