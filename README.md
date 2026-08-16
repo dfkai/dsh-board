@@ -6,6 +6,7 @@
 
 <img src="assets/demo.gif" alt="dsh-board demo" width="100%">
 
+[![npm](https://img.shields.io/npm/v/dsh-board)](https://www.npmjs.com/package/dsh-board)
 [![version](https://img.shields.io/badge/version-v0.1.0-blue)](https://github.com/dfkai/dsh-board/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 [![plugin](https://img.shields.io/badge/dsh--plugin-unofficial-lightgrey)](https://github.com/deepseek-ai/deepseek-harness/discussions/2340)
