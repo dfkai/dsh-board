@@ -42,7 +42,8 @@ export default defineConfig([
     format: ['cjs'],
     platform: 'browser',
     dts: false,
-    sourcemap: true,
+    minify: true,
+    sourcemap: false,
     clean: false,
     external: [...CLIENT_EXTERNALS],
     define: {

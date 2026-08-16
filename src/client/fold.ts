@@ -20,6 +20,11 @@ export interface ModelUsage {
   cacheRead: number
 }
 
+/** Number.isFinite guard for optional wire counts. */
+function finite(n: unknown): number {
+  return typeof n === 'number' && Number.isFinite(n) ? n : 0
+}
+
 export interface HistoryFold {
   perTurn: TurnUsage[]
   perModel: Map<string, ModelUsage>
@@ -38,7 +43,7 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
       data?: {
         turn?: number
         header?: { config?: { model?: string } }
-        chunk?: { type?: string; usage?: { inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; reasoningTokens?: number } }
+        chunk?: { type?: string; usage?: { inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; cacheWriteTokens?: number; reasoningTokens?: number } }
       }
     }
     if (event?.type === 'request/header') {
@@ -51,11 +56,13 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
     if (chunk?.type !== 'usage') continue
     const turn = event.data?.turn
     if (turn === undefined) continue
-    const input = chunk.usage?.inputTokens ?? 0
+    // Cache writes are billable input — fold them in so per-turn/per-model
+    // input matches the lifetime projection's input口径.
+    const input = finite(chunk.usage?.inputTokens) + finite(chunk.usage?.cacheWriteTokens)
     // DeepSeek bills reasoning tokens at the OUTPUT rate; the wire reports
     // them separately from completion_tokens, so fold them back in.
-    const output = (chunk.usage?.outputTokens ?? 0) + (chunk.usage?.reasoningTokens ?? 0)
-    const cacheRead = chunk.usage?.cacheReadTokens ?? 0
+    const output = finite(chunk.usage?.outputTokens) + finite(chunk.usage?.reasoningTokens)
+    const cacheRead = finite(chunk.usage?.cacheReadTokens)
 
     const row = perTurn.get(turn) ?? { turn, input: 0, output: 0, cacheRead: 0 }
     row.input += input
@@ -82,17 +89,34 @@ export function foldHistory(entries: readonly { event: unknown }[]): HistoryFold
   return { perTurn: turns, perModel, cumulative }
 }
 
-/** Compact token count with 万/亿 for the big numbers, K/M below. */
-export function formatTokens(n: number): string {
+/** UI language ids the panel formats numbers for. */
+export type Lang = 'zh' | 'en'
+
+/** Compact token count: zh uses 万/亿, en uses K/M/B; unit boundaries re-scale
+ *  after rounding so 999 950 never renders as "1000K". */
+export function formatTokens(n: number, lang: Lang = 'zh'): string {
+  if (!Number.isFinite(n) || n < 0) n = 0
   if (n < 1000) return String(Math.round(n))
-  if (n < 1_000_000) return `${Math.round(n / 100) / 10}K`
-  if (n < 100_000_000) return `${Math.round(n / 1_000) / 10}万`
+  if (lang !== 'zh') {
+    if (n < 1_000_000) return `${Math.round(n / 100) / 10}K`
+    if (n < 1_000_000_000) return `${Math.round(n / 100_000) / 10}M`
+    return `${Math.round(n / 100_000_000) / 10}B`
+  }
+  if (n < 1_000_000) {
+    const k = Math.round(n / 100) / 10
+    return k >= 1000 ? `${k / 10}万` : `${k}K`
+  }
+  if (n < 100_000_000) {
+    const w = Math.round(n / 1_000) / 10
+    return w >= 10_000 ? `${Math.round(w / 1_000) / 10}亿` : `${w}万`
+  }
   return `${Math.round(n / 10_000_000) / 10}亿`
 }
 
 /** Compact cost display. */
 export function formatCost(cost: number): string {
-  if (cost <= 0) return '¥0'
+  if (!Number.isFinite(cost) || cost <= 0) return '¥0'
+  if (cost < 0.0001) return '¥<0.0001'
   if (cost < 0.01) return `¥${cost.toFixed(4)}`
   return `¥${cost.toFixed(2)}`
 }

@@ -1,7 +1,7 @@
 {
   "name": "dsh-board",
   "version": "0.1.0",
-  "description": "dsh client panel bundle: a live AI-styled monitor strip above the composer — token usage, context occupancy, background jobs, subagent state, and turn timing.",
+  "description": "dsh client bundle: a sidebar usage & cost dashboard — token stats, peak/off-peak aware per-model pricing, membership ladder, achievements and a daily heatmap.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -16,7 +16,6 @@
   "files": [
     "lib/index.js",
     "lib/client.js",
-    "lib/client.js.map",
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",
@@ -26,11 +25,14 @@
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
-    "panel",
-    "monitor",
+    "dashboard",
+    "usage",
+    "cost",
+    "billing",
+    "pricing",
     "tokens",
-    "ui",
-    "dashboard"
+    "sidebar",
+    "ui"
   ],
   "license": "MIT",
   "repository": {
@@ -45,14 +47,18 @@
       "platform": "web",
       "inject": [
         "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-locale"
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-primitives"
       ]
     }
   },
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "sync": "node scripts/sync.mjs"
+    "sync": "node scripts/sync.mjs",
+    "prepack": "pnpm build"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

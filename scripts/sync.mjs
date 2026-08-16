@@ -24,6 +24,8 @@ const installedDir = dirname(packageJson)
 const repoDir = dirname(new URL('../package.json', import.meta.url).pathname)
 
 for (const file of ['client.js', 'client.js.map']) {
-  copyFileSync(join(repoDir, 'lib', file), join(installedDir, 'lib', file))
+  const src = join(repoDir, 'lib', file)
+  if (!existsSync(src)) continue
+  copyFileSync(src, join(installedDir, 'lib', file))
   console.log(`synced lib/${file} → ${join(installedDir, 'lib', file)}`)
 }

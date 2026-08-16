@@ -1,10 +1,10 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
 import { estimateCost, isPeakHour, priceFor } from './pricing.ts'
-import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type TurnUsage } from './fold.ts'
+import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type Lang, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
 
@@ -19,11 +19,26 @@ interface ApiLike {
   }
 }
 
+/** Minimal face of the locale service: reactive active-language snapshot. */
+interface LocaleLike {
+  getSnapshot(): { active: string }
+  subscribe(fn: () => void): () => void
+}
+
 export type SidebarUsageProps = PropsRuntime<'sidebar.footer.action'> & PropsLocale<typeof NS> & {
   api: ApiLike
+  locale: LocaleLike
 }
 
 const COLLAPSE_KEY = 'dsh-board.collapsed'
+
+/** Immutable empty fold — also the reset value on session switch. */
+const EMPTY_FOLD: HistoryFold = { perTurn: [], perModel: new Map(), cumulative: [] }
+
+/** Number.isFinite guard for optional wire counts. */
+function finite(n: unknown): number {
+  return typeof n === 'number' && Number.isFinite(n) ? n : 0
+}
 
 function readCollapsed(): boolean {
   try {
@@ -49,11 +64,12 @@ interface BreakdownView {
 }
 
 /** The 1M-context window: occupancy, remaining budget, and what eats it. */
-function ContextBlock({ pressure, breakdown, subagentMs, t }: {
+function ContextBlock({ pressure, breakdown, subagentMs, t, lang }: {
   pressure: PressureView | undefined
   breakdown: BreakdownView | undefined
   subagentMs: number | undefined
   t: PropsLocale<typeof NS>['t']
+  lang: Lang
 }): JSX.Element | null {
   if (pressure === undefined && breakdown === undefined) return null
   const used = pressure?.projectedTokens ?? pressure?.pressureTokens
@@ -86,7 +102,7 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
       {used !== undefined && window !== undefined
         ? (
           <div className="dsh-board-context-sub">
-            {formatTokens(used)} / {formatTokens(window)} · {t('ctx.remaining', { count: formatTokens(remaining ?? 0) })}
+            {formatTokens(used, lang)} / {formatTokens(window, lang)} · {t('ctx.remaining', { count: formatTokens(remaining ?? 0, lang) })}
           </div>
         )
         : null}
@@ -99,7 +115,7 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
                   key={part.key}
                   className={`dsh-board-context-part dsh-board-context-part-${part.key}`}
                   style={{ width: `${part.tokens / totalParts * 100}%` }}
-                  title={`${part.label} ${formatTokens(part.tokens)}`}
+                  title={`${part.label} ${formatTokens(part.tokens, lang)}`}
                 />
               ))}
             </div>
@@ -107,7 +123,7 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
               {parts.filter(part => part.tokens > 0).map(part => (
                 <span key={part.key} className="dsh-board-context-legend-item">
                   <i className={`dsh-board-context-dot dsh-board-context-dot-${part.key}`} />
-                  {part.label} {formatTokens(part.tokens)}
+                  {part.label} {formatTokens(part.tokens, lang)}
                 </span>
               ))}
             </div>
@@ -122,7 +138,7 @@ function ContextBlock({ pressure, breakdown, subagentMs, t }: {
 }
 
 /** Stacked per-turn input/output bars. */
-function TrendBars({ data }: { data: readonly TurnUsage[] }): JSX.Element {
+function TrendBars({ data, t }: { data: readonly TurnUsage[]; t: PropsLocale<typeof NS>['t'] }): JSX.Element {
   const max = Math.max(1, ...data.map(item => item.input + item.output))
   const width = data.length * 10 - 4
   return (
@@ -135,7 +151,7 @@ function TrendBars({ data }: { data: readonly TurnUsage[] }): JSX.Element {
           <g key={item.turn}>
             <rect className="dsh-board-bar-in" x={x} y={36 - inH} width={6} height={inH} rx={2} />
             <rect className="dsh-board-bar-out" x={x} y={36 - inH - outH} width={6} height={outH} rx={2} />
-            <title>{`第 ${item.turn} 轮 · 入 ${item.input} · 出 ${item.output}`}</title>
+            <title>{t('trend.tooltip', { turn: item.turn, in: item.input, out: item.output })}</title>
           </g>
         )
       })}
@@ -166,9 +182,10 @@ function CumulativeArea({ values }: { values: readonly number[] }): JSX.Element 
   )
 }
 
-function ModelRows({ models, t }: {
+function ModelRows({ models, t, lang }: {
   models: readonly { model: string; input: number; output: number }[]
   t: PropsLocale<typeof NS>['t']
+  lang: Lang
 }): JSX.Element {
   const max = Math.max(1, ...models.map(item => item.output))
   return (
@@ -177,7 +194,7 @@ function ModelRows({ models, t }: {
         <div className="dsh-board-model" key={item.model}>
           <div className="dsh-board-model-head">
             <span className="dsh-board-model-name" title={item.model}>{item.model}</span>
-            <span className="dsh-board-model-value">{t('model.value', { out: formatTokens(item.output), in: formatTokens(item.input) })}</span>
+            <span className="dsh-board-model-value">{t('model.value', { out: formatTokens(item.output, lang), in: formatTokens(item.input, lang) })}</span>
           </div>
           <div className="dsh-board-model-bar">
             <div className="dsh-board-model-fill" style={{ width: `${item.output / max * 100}%` }} />
@@ -189,7 +206,7 @@ function ModelRows({ models, t }: {
 }
 
 /** GitHub-style daily token heatmap: 12 weeks × 7 days. */
-function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] }): JSX.Element {
+function Heatmap({ daily, t }: { daily: readonly { day: number; tokens: number }[]; t: PropsLocale<typeof NS>['t'] }): JSX.Element {
   const weeks = 12
   const rows = 7
   const cell = 8
@@ -211,7 +228,7 @@ function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] 
         const y = (i % rows) * (cell + gap)
         return (
           <rect key={day} className={`dsh-board-heat-l${level}`} x={x} y={y} width={cell} height={cell} rx={2}>
-            <title>{`${new Date(day).toLocaleDateString()} · ${tokens} token`}</title>
+            <title>{t('heat.day', { date: new Date(day).toLocaleDateString(), tokens })}</title>
           </rect>
         )
       })}
@@ -219,8 +236,9 @@ function Heatmap({ daily }: { daily: readonly { day: number; tokens: number }[] 
   )
 }
 
-function SessionRows({ sessions }: {
+function SessionRows({ sessions, lang }: {
   sessions: readonly { id: string; title: string; tokens: number }[]
+  lang: Lang
 }): JSX.Element {
   const max = Math.max(1, ...sessions.map(item => item.tokens))
   return (
@@ -229,7 +247,7 @@ function SessionRows({ sessions }: {
         <div className="dsh-board-session" key={item.id}>
           <div className="dsh-board-session-head">
             <span className="dsh-board-session-title" title={item.title}>{item.title}</span>
-            <span className="dsh-board-session-value">{formatTokens(item.tokens)}</span>
+            <span className="dsh-board-session-value">{formatTokens(item.tokens, lang)}</span>
           </div>
           <div className="dsh-board-session-bar">
             <div className="dsh-board-session-fill" style={{ width: `${item.tokens / max * 100}%` }} />
@@ -246,10 +264,11 @@ function SessionRows({ sessions }: {
  * percentage, an unlock ETA at the user's current pace, per-tier perks, a
  * level-up celebration flash, and the full ten-rung ladder.
  */
-function MembershipCard({ total, daily, t }: {
+function MembershipCard({ total, daily, t, lang }: {
   total: number
   daily: readonly { day: number; tokens: number }[]
   t: PropsLocale<typeof NS>['t']
+  lang: Lang
 }): JSX.Element {
   const rank = rankFor(total)
   const index = LEVELS.indexOf(rank.level)
@@ -304,7 +323,7 @@ function MembershipCard({ total, daily, t }: {
           ? t('rank.max')
           : `${t('rank.next', {
             name: t(`rank.${index + 1}` as RichKey),
-            count: formatTokens(next.floor - total),
+            count: formatTokens(next.floor - total, lang),
           })} · ${t('rank.percent', { percent: Math.round(progress * 100) })}`}
       </div>
       {next !== null && daysToNext !== null
@@ -338,7 +357,7 @@ function MembershipCard({ total, daily, t }: {
               i === index ? 'dsh-board-card-rung-now' : '',
               i > index ? 'dsh-board-card-rung-locked' : '',
             ].filter(Boolean).join(' ')}
-            title={`LV.${i + 1} ${level.zh}`}
+            title={t(`rank.${i}` as RichKey)}
           >
             {level.emoji}
           </span>
@@ -390,7 +409,7 @@ const MemoModelRows = memo(ModelRows)
 const MemoSessionRows = memo(SessionRows)
 const MemoAchievements = memo(Achievements)
 
-export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api, t }: SidebarUsageProps): JSX.Element {
+export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api, t, locale }: SidebarUsageProps): JSX.Element {
   const current = useSessions(s => s.current)
   const ids = useSessions(s => s.ids)
   const byId = useSessions(s => s.byId)
@@ -406,13 +425,48 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     if (used === undefined || window === undefined || window <= 0) return null
     return Math.min(100, Math.round(used / window * 100))
   })()
-  const steps = (summary?.projectionValues?.sessionStats as { steps?: number } | undefined)?.steps
   const running = summary?.running ?? false
+  const localeSnapshot = useSyncExternalStore(
+    (fn: () => void) => locale.subscribe(fn),
+    () => locale.getSnapshot(),
+  )
+  const lang: Lang = localeSnapshot.active === 'en' ? 'en' : 'zh'
   const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(readCollapsed)
-  const [fold, setFold] = useState<HistoryFold>({ perTurn: [], perModel: new Map(), cumulative: [] })
+  const [fold, setFold] = useState<HistoryFold>(() => EMPTY_FOLD)
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const orbRef = useRef<HTMLButtonElement | null>(null)
+  const railPanelRef = useRef<HTMLDivElement | null>(null)
+  const [railPos, setRailPos] = useState<{ left: number; top: number } | null>(null)
   const panelVisible = wide ? !collapsed : open
+
+  // Rail mode: the sidebar column is ~56px wide and clips overflow, so the
+  // popover escapes via position:fixed anchored beside the orb (wide mode
+  // keeps the badge-rides-up unit inside the column instead).
+  useLayoutEffect(() => {
+    if (wide || !open) {
+      setRailPos(null)
+      return
+    }
+    const measure = (): void => {
+      const orbEl = orbRef.current
+      const panelEl = railPanelRef.current
+      if (orbEl === null || panelEl === null) return
+      const r = orbEl.getBoundingClientRect()
+      const pw = panelEl.offsetWidth
+      const ph = panelEl.offsetHeight
+      const left = Math.min(r.right + 8, window.innerWidth - pw - 8)
+      const top = Math.max(8, Math.min(r.bottom - ph, window.innerHeight - ph - 8))
+      setRailPos({ left, top })
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [wide, open])
+
+  // Never show the previous session's series while a new one loads (or on
+  // failure — stale per-turn/per-model data would misprice this session).
+  useEffect(() => { setFold(EMPTY_FOLD) }, [current])
 
   useEffect(() => {
     if (current === undefined || !panelVisible) return
@@ -423,11 +477,11 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         if (cancelled || !res.result.ok || res.result.value === undefined) return
         setFold(foldHistory(res.result.value.events))
       } catch {
-        // History unavailable — keep the previous fold.
+        // History unavailable — the fold stays empty for this session.
       }
     })()
     return () => { cancelled = true }
-  }, [current, api, panelVisible, steps])
+  }, [current, api, panelVisible])
 
   const panelOpen = wide ? !collapsed : open
   useEffect(() => {
@@ -453,12 +507,14 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       const row = byId[id]
       const u = row?.projectionValues?.tokenUsage
       if (u === undefined) continue
-      const i = u.uncachedInputTokens + u.cacheReadTokens + u.cacheWriteTokens
-      const o = u.outputTokens
+      const i = finite(u.uncachedInputTokens) + finite(u.cacheReadTokens) + finite(u.cacheWriteTokens)
+      const o = finite(u.outputTokens)
       input += i
       output += o
-      hit += u.cacheReadTokens
-      cost += estimateCost(u)
+      hit += finite(u.cacheReadTokens)
+      // Price each session at the moment of its own activity — not the moment
+      // the panel is opened — so lifetime cost stops drifting with peak/off-peak.
+      cost += estimateCost(u, priceFor(undefined, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
       if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
         const day = new Date(row.updatedAt).setHours(0, 0, 0, 0)
@@ -508,6 +564,11 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
 
   const sessionCost = usage === undefined ? 0 : estimateCost(usage, priceFor(dominantModel))
 
+  // Stable arrays for the memoized chart children — slicing inline would
+  // rebuild them on every render and defeat the memo bail-out.
+  const trendData = useMemo(() => fold.perTurn.slice(-24), [fold])
+  const cumulativeData = useMemo(() => fold.cumulative.slice(-60), [fold])
+
   const hero = lifetime.total
   const rank = rankFor(lifetime.total)
   const rankName = t(`rank.${LEVELS.indexOf(rank.level)}` as RichKey)
@@ -523,7 +584,27 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     }
   }
 
-  const panel = (
+  const isEmpty = ids.length === 0 && usage === undefined
+  const panel = isEmpty
+    ? (
+      <div className="dsh-board-panel">
+        <div className="dsh-board-panel-title">
+          <span>{t('panel.title')}</span>
+          <span className="dsh-board-title-right">
+            <button
+              type="button"
+              className="dsh-board-close"
+              aria-label={t('panel.collapse.aria')}
+              onClick={() => { if (wide) setCollapsed(true); else setOpen(false) }}
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+        <div className="dsh-board-empty">{t('spark.empty')}</div>
+      </div>
+    )
+    : (
     <div className="dsh-board-panel">
       <div className="dsh-board-panel-title">
         <span>{t('panel.title')}</span>
@@ -542,7 +623,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         </span>
       </div>
       <div className="dsh-board-hero">
-        <div className="dsh-board-hero-value">{formatTokens(hero)}</div>
+        <div className="dsh-board-hero-value">{formatTokens(hero, lang)}</div>
         <div className="dsh-board-hero-label">{t('global.tokens')}</div>
       </div>
       <div className="dsh-board-hero-sub">
@@ -551,24 +632,24 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       <div className="dsh-board-usage">
         <div className="dsh-board-usage-item">
           <span className="dsh-board-usage-label">{t('usage.total')}</span>
-          <span className="dsh-board-usage-value">{formatTokens(lifetime.total)}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.total, lang)}</span>
         </div>
         <div className="dsh-board-usage-item">
           <span className="dsh-board-usage-label">{t('usage.today')}</span>
-          <span className="dsh-board-usage-value">{formatTokens(lifetime.today)}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.today, lang)}</span>
         </div>
         <div className="dsh-board-usage-item">
           <span className="dsh-board-usage-label">{t('usage.week')}</span>
-          <span className="dsh-board-usage-value">{formatTokens(lifetime.week)}</span>
+          <span className="dsh-board-usage-value">{formatTokens(lifetime.week, lang)}</span>
         </div>
       </div>
-      <MemoContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} />
+      <MemoContextBlock pressure={pressure} breakdown={breakdown} subagentMs={subagentMs} t={t} lang={lang} />
       {fold.perTurn.length === 0
         ? null
         : (
           <>
             <SectionTitle>{t('sec.trend')}</SectionTitle>
-            <MemoTrendBars data={fold.perTurn.slice(-24)} />
+            <MemoTrendBars data={trendData} t={t} />
             <div className="dsh-board-legend">
               <span><i className="dsh-board-legend-in" />{t('legend.in')}</span>
               <span><i className="dsh-board-legend-out" />{t('legend.out')}</span>
@@ -580,7 +661,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         : (
           <>
             <SectionTitle>{t('sec.cumulative')}</SectionTitle>
-            <MemoCumulativeArea values={fold.cumulative.slice(-60)} />
+            <MemoCumulativeArea values={cumulativeData} />
           </>
         )}
       {lifetime.daily.length === 0
@@ -588,17 +669,17 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         : (
           <>
             <SectionTitle>{t('sec.heat')}</SectionTitle>
-            <MemoHeatmap daily={lifetime.daily} />
+            <MemoHeatmap daily={lifetime.daily} t={t} />
             <div className="dsh-board-heat-note">{t('heat.note')}</div>
           </>
         )}
-      <MemoMembershipCard total={lifetime.total} daily={lifetime.daily} t={t} />
+      <MemoMembershipCard total={lifetime.total} daily={lifetime.daily} t={t} lang={lang} />
       {models.length === 0
         ? null
         : (
           <>
             <SectionTitle>{t('sec.model')}</SectionTitle>
-            <MemoModelRows models={models} t={t} />
+            <MemoModelRows models={models} t={t} lang={lang} />
           </>
         )}
       <SectionTitle>{t('sec.achievements')}</SectionTitle>
@@ -608,7 +689,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         : (
           <>
             <SectionTitle>{t('sec.global')}</SectionTitle>
-            <MemoSessionRows sessions={lifetime.sessions} />
+            <MemoSessionRows sessions={lifetime.sessions} lang={lang} />
           </>
         )}
       <div className="dsh-board-note">
@@ -624,9 +705,9 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
           <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
           <span className="dsh-board-badge-nums">
             <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
-            <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total)} token</span>
+            <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total, lang)} {t('global.tokens')}</span>
           </span>
-          <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today)} · {t('usage.week')} {formatTokens(lifetime.week)}</span>
+          <span className="dsh-board-badge-sub">{t('usage.today')} {formatTokens(lifetime.today, lang)} · {t('usage.week')} {formatTokens(lifetime.week, lang)}</span>
           <span className="dsh-board-chevron">{collapsed ? '▸' : '▾'}</span>
         </span>
         {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
@@ -636,10 +717,12 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
 
   const triggerButton = (
     <button
+      ref={orbRef}
       type="button"
       className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
       style={{ '--tier': rank.level.color } as never}
       aria-expanded={wide ? !collapsed : open}
+      aria-label={wide ? undefined : `${rankName} · ${t('panel.title')}`}
       title={rankName}
       onClick={toggle}
     >
@@ -661,7 +744,19 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         : (
           <>
             {triggerButton}
-            {open ? <div className="dsh-board-float">{panel}</div> : null}
+            {open
+              ? (
+                <div
+                  ref={railPanelRef}
+                  className="dsh-board-float dsh-board-rail"
+                  style={railPos === null
+                    ? undefined
+                    : { position: 'fixed', left: railPos.left, top: railPos.top, zIndex: 60 } as never}
+                >
+                  {panel}
+                </div>
+              )
+              : null}
           </>
         )}
     </div>

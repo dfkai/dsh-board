@@ -51,8 +51,9 @@ export function priceFor(model: string | undefined, nowMs = Date.now()): ModelPr
   const modelId = model ?? DEFAULT_MODEL
   if (nowMs >= EFFECTIVE_AT_MS) {
     const table = isPeakHour(nowMs) ? PEAK_PRICES : OFF_PEAK_PRICES
-    const price = table[modelId]
-    if (price !== undefined) return price
+    // Unknown models follow the DEFAULT_MODEL rate of the SAME moment's table,
+    // never the pre-2026-08-17 standard prices.
+    return table[modelId] ?? table[DEFAULT_MODEL]
   }
   return MODEL_PRICES[modelId] ?? MODEL_PRICES[DEFAULT_MODEL]
 }
@@ -64,9 +65,15 @@ export interface BillingUsage {
   outputTokens: number
 }
 
+/** Number.isFinite guard for wire counts that may be missing or corrupt. */
+function finite(n: unknown): number {
+  return typeof n === 'number' && Number.isFinite(n) ? n : 0
+}
+
 /** Estimate a session's cost from its durable tokenUsage projection. */
 export function estimateCost(usage: BillingUsage, price: ModelPrice = priceFor(undefined)): number {
-  return (usage.uncachedInputTokens + usage.cacheWriteTokens) * price.cacheMissPerM / 1_000_000
-    + usage.cacheReadTokens * price.cacheHitPerM / 1_000_000
-    + usage.outputTokens * price.outputPerM / 1_000_000
+  const miss = finite(usage.uncachedInputTokens) + finite(usage.cacheWriteTokens)
+  return miss * price.cacheMissPerM / 1_000_000
+    + finite(usage.cacheReadTokens) * price.cacheHitPerM / 1_000_000
+    + finite(usage.outputTokens) * price.outputPerM / 1_000_000
 }
