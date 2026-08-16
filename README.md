@@ -6,6 +6,7 @@
 
 [![version](https://img.shields.io/badge/version-v0.1.0-blue)](https://github.com/dfkai/dsh-board/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![plugin](https://img.shields.io/badge/dsh--plugin-unofficial-lightgrey)](https://github.com/deepseek-ai/deepseek-harness/discussions/2340)
 
 ## 特性
 
@@ -29,7 +30,7 @@ dsh plugin --profile <profile> add github:dfkai/dsh-board@v0.1.0
 dsh --profile <profile> --dump-config   # 应出现 # == dsh-board 层
 ```
 
-> **harness 版本要求**：推理 token 按输出价计入用量需要 harness 的 token-meter 修复（commit `00145f29a7`，2026-08-15；已提交官方社区见 [discussions/2338](https://github.com/deepseek-ai/deepseek-harness/discussions/2338)）。旧 harness 上分模型/每轮图表仍会计入推理 token，但累计总量与成本会少算推理部分。
+> **harness 版本要求**：推理 token 按输出价计入用量需要 harness 的 token-meter 修复。补丁已提交官方社区（[discussions/2338](https://github.com/deepseek-ai/deepseek-harness/discussions/2338)，可合并分支 `dfkai/deepseek-harness@fix/token-meter-reasoning-output`）。旧 harness 上分模型/每轮图表仍会计入推理 token，但累计总量与成本会少算推理部分。
 
 ## 计费口径
 
