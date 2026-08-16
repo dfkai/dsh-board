@@ -59,7 +59,7 @@ The panel shows **estimates, not a billing statement** — the DeepSeek platform
 
 Notes:
 
-- **Reasoning tokens are counted at the output rate** (DeepSeek's billing口径); `reasoningTokens` is folded into output
+- **Reasoning tokens are counted at the output rate** (DeepSeek's billing semantics); `reasoningTokens` is folded into output
 - **This-session cost** uses the dominant model; **lifetime cost** prices each session at its last-activity moment with the default model (v4-pro)
 - Unknown models fall back to the default model's rate in the table of the current moment
 
