@@ -24,6 +24,9 @@ A **sidebar usage & cost dashboard** for [DeepSeek Harness (DSH)](https://github
 ## Install
 
 ```sh
+# npm (recommended)
+dsh plugin --profile <profile> add dsh-board@0.1.0
+# or straight from GitHub
 dsh plugin --profile <profile> add github:dfkai/dsh-board@v0.1.0
 ```
 

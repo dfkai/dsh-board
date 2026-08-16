@@ -24,6 +24,9 @@
 ## 安装
 
 ```sh
+# npm（推荐）
+dsh plugin --profile <profile> add dsh-board@0.1.0
+# 或从 GitHub 直装
 dsh plugin --profile <profile> add github:dfkai/dsh-board@v0.1.0
 ```
 
