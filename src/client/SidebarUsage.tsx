@@ -411,8 +411,30 @@ const MemoAchievements = memo(Achievements)
 
 export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api, t, locale }: SidebarUsageProps): JSX.Element {
   const current = useSessions(s => s.current)
-  const ids = useSessions(s => s.ids)
-  const byId = useSessions(s => s.byId)
+  const ids = useSessions(
+    s => s.ids,
+    (left, right) => left.length === right.length && left.every((id, index) => id === right[index]),
+  )
+  // The store rebuilds ids/byId on every set; subscribe through a content
+  // digest so unrelated list noise (titles, jobs, other sessions' flags)
+  // stops forcing a full re-render + lifetime recompute. The digest covers
+  // exactly the fields the panel reads.
+  const sessionSlice = useSessions(
+    (s) => {
+      let digest = ''
+      for (const id of s.ids) {
+        const row = s.byId[id]
+        const u = row?.projectionValues?.tokenUsage
+        const p = row?.projectionValues?.contextPressure
+        const bd = row?.projectionValues?.contextBreakdown
+        const sub = (row?.projectionValues?.subagentTiming as { settledMs?: number } | undefined)?.settledMs ?? 0
+        digest += `${id}|${row?.updatedAt ?? 0}|${u?.uncachedInputTokens ?? 0},${u?.cacheReadTokens ?? 0},${u?.cacheWriteTokens ?? 0},${u?.outputTokens ?? 0}|${p?.projectedTokens ?? 0},${p?.pressureTokens ?? 0}|${bd?.systemTokens ?? 0},${bd?.toolsTokens ?? 0},${bd?.messageTokens ?? 0}|${sub}|${row?.running ? 1 : 0};`
+      }
+      return { digest, byId: s.byId }
+    },
+    (left, right) => left.digest === right.digest,
+  )
+  const byId = sessionSlice.byId
   const summary = current === undefined ? undefined : byId[current]
   const usage = summary?.projectionValues?.tokenUsage as TokenUsageProjection | undefined
   const projectionValues = summary?.projectionValues
