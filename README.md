@@ -2,7 +2,7 @@
 
 给 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 的 **侧栏用量与成本面板**：把 DeepSeek 后台风格的用量统计装进 Web GUI 左下角。
 
-<img src="https://cdn.jsdelivr.net/gh/dfkai/dsh-board@6d84d5d/assets/demo.gif?v=2" alt="dsh-board demo" width="100%">
+<img src="assets/demo.gif" alt="dsh-board demo" width="100%">
 
 [![version](https://img.shields.io/badge/version-v0.1.0-blue)](https://github.com/dfkai/dsh-board/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
