@@ -59,7 +59,7 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "sync": "node scripts/sync.mjs",
-    "prepack": "pnpm build"
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
