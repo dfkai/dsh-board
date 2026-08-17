@@ -3,7 +3,7 @@ import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
-import { currentRate, estimateCost, isPeakHour, priceFor } from './pricing.ts'
+import { currentRate, estimateCost, priceFor } from './pricing.ts'
 import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type Lang, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
@@ -296,13 +296,13 @@ function MembershipCard({ total, daily, t, lang }: {
           : (
             <div className="dsh-board-card-step dsh-board-card-prev" title={t(`rank.${index - 1}` as RichKey)}>
               <span className="dsh-board-card-step-emoji">{prev.emoji}</span>
-              <span className="dsh-board-card-step-name">{t(`rank.${index - 1}` as RichKey)}</span>
+              <span className="dsh-board-card-step-name">{lang === 'en' ? prev.en : prev.zh}</span>
               <span className="dsh-board-card-step-status">✓ {t('rank.unlocked')}</span>
             </div>
           )}
         <div className="dsh-board-card-current">
           <span className="dsh-board-card-current-emoji">{rank.level.emoji}</span>
-          <span className="dsh-board-card-current-name">{t(`rank.${index}` as RichKey)}</span>
+          <span className="dsh-board-card-current-name">{lang === 'en' ? rank.level.en : rank.level.zh}</span>
           <span className="dsh-board-card-current-tag">{t('rank.current')}</span>
         </div>
         {next === null
@@ -310,7 +310,7 @@ function MembershipCard({ total, daily, t, lang }: {
           : (
             <div className="dsh-board-card-step dsh-board-card-next" title={t(`rank.${index + 1}` as RichKey)}>
               <span className="dsh-board-card-step-emoji">{next.emoji}</span>
-              <span className="dsh-board-card-step-name">{t(`rank.${index + 1}` as RichKey)}</span>
+              <span className="dsh-board-card-step-name">{lang === 'en' ? next.en : next.zh}</span>
               <span className="dsh-board-card-step-status">🔒 {t('rank.locked')}</span>
             </div>
           )}
@@ -322,7 +322,7 @@ function MembershipCard({ total, daily, t, lang }: {
         {next === null
           ? t('rank.max')
           : `${t('rank.next', {
-            name: t(`rank.${index + 1}` as RichKey),
+            name: lang === 'en' ? next.en : next.zh,
             count: formatTokens(next.floor - total, lang),
           })} · ${t('rank.percent', { percent: Math.round(progress * 100) })}`}
       </div>
@@ -749,7 +749,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
           </>
         )}
       <div className="dsh-board-note">
-        {t('note.pricing')} · {isPeakHour() ? t('window.peak') : t('window.offpeak')}
+        {t('note.pricing')} · {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
       </div>
     </div>
   )
