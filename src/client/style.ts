@@ -91,6 +91,31 @@ const CSS = `
   left: 7px;
   line-height: 0;
 }
+/* Live rate chip: which regime and the current output ¥/M. */
+.dsh-board-window {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dsh-board-window-standard {
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  background: var(--dsw-alias-bg-skeleton, rgba(0, 0, 0, 0.06));
+}
+.dsh-board-window-peak {
+  color: var(--dsw-alias-state-warn-primary, #f59e0b);
+  background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f59e0b) 12%, transparent);
+}
+.dsh-board-window-offpeak {
+  color: var(--dsw-alias-state-success-primary, #16a34a);
+  background: color-mix(in srgb, var(--dsw-alias-state-success-primary, #16a34a) 12%, transparent);
+}
 /* Rail: a plain circular entry. */
 .dsh-board-orb {
   width: 34px;
@@ -505,6 +530,16 @@ const CSS = `
 .dsh-board-hero-sub {
   font-size: 10.5px;
   color: var(--dsw-alias-label-secondary, #6b7280);
+}
+.dsh-board-hint {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f59e0b) 35%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f59e0b) 8%, transparent);
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  font-size: 10.5px;
+  line-height: 1.5;
 }
 
 .dsh-board-sec {

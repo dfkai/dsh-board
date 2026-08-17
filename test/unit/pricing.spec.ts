@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_MODEL, MODEL_PRICES, OFF_PEAK_PRICES, PEAK_PRICES, estimateCost, isPeakHour, priceFor } from '../../src/client/pricing.ts'
+import { currentRate, DEFAULT_MODEL, MODEL_PRICES, OFF_PEAK_PRICES, PEAK_PRICES, estimateCost, isPeakHour, priceFor } from '../../src/client/pricing.ts'
 
 // EFFECTIVE_AT_MS = 2026-08-17 00:00 Beijing = 2026-08-16T16:00Z
 const BEFORE = Date.UTC(2026, 7, 16, 15, 59)
@@ -53,5 +53,20 @@ describe('estimateCost', () => {
 
   it('guards NaN/Infinity buckets as zero', () => {
     expect(estimateCost({ uncachedInputTokens: NaN, cacheWriteTokens: Infinity, cacheReadTokens: 0, outputTokens: 0 } as never, price)).toBe(0)
+  })
+})
+
+describe('currentRate', () => {
+  it('reports the flat rate before the effective moment', () => {
+    const r = currentRate('deepseek-v4-pro', Date.UTC(2026, 7, 16, 12, 0))
+    expect(r.window).toBe('standard')
+    expect(r.price).toEqual(MODEL_PRICES['deepseek-v4-pro'])
+  })
+
+  it('reports peak/off-peak with the right table after it', () => {
+    expect(currentRate('deepseek-v4-pro', Date.UTC(2026, 7, 17, 1, 30)).window).toBe('peak')
+    expect(currentRate('deepseek-v4-pro', Date.UTC(2026, 7, 17, 1, 30)).price).toEqual(PEAK_PRICES['deepseek-v4-pro'])
+    expect(currentRate('deepseek-v4-flash', Date.UTC(2026, 7, 16, 20, 0)).window).toBe('offpeak')
+    expect(currentRate('deepseek-v4-flash', Date.UTC(2026, 7, 16, 20, 0)).price).toEqual(OFF_PEAK_PRICES['deepseek-v4-flash'])
   })
 })

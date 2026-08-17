@@ -68,6 +68,24 @@ export interface BillingUsage {
   outputTokens: number
 }
 
+/** Which rate regime is live at a moment: the flat list, or peak/off-peak. */
+export type RateWindow = 'standard' | 'peak' | 'offpeak'
+
+/** The live regime and effective price table for a model at a moment. */
+export interface CurrentRate {
+  window: RateWindow
+  price: ModelPrice
+}
+
+/** Live rate view for the badge chip and the cache-health hint. */
+export function currentRate(model: string | undefined, nowMs = Date.now()): CurrentRate {
+  if (nowMs < EFFECTIVE_AT_MS) return { window: 'standard', price: priceFor(model, nowMs) }
+  return {
+    window: isPeakHour(nowMs) ? 'peak' : 'offpeak',
+    price: priceFor(model, nowMs),
+  }
+}
+
 /** Number.isFinite guard for wire counts that may be missing or corrupt. */
 function finite(n: unknown): number {
   return typeof n === 'number' && Number.isFinite(n) ? n : 0

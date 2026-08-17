@@ -3,7 +3,7 @@ import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
-import { estimateCost, isPeakHour, priceFor } from './pricing.ts'
+import { currentRate, estimateCost, isPeakHour, priceFor } from './pricing.ts'
 import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type Lang, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
@@ -610,6 +610,9 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     }
   }
 
+  const liveRate = currentRate(dominantModel)
+  const hitRate = lifetime.input === 0 ? 0 : lifetime.hit / lifetime.input
+  const missHitRatio = liveRate.price.cacheHitPerM > 0 ? Math.round(liveRate.price.cacheMissPerM / liveRate.price.cacheHitPerM) : 0
   const isEmpty = ids.length === 0 && usage === undefined
   const panel = isEmpty
     ? (
@@ -655,6 +658,13 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       <div className="dsh-board-hero-sub">
         {t('hero.streak', { n: usageStats.streak })} · {t('hero.sessions', { n: ids.length })} · {t('hero.cache', { percent: lifetime.input === 0 ? 0 : Math.round(lifetime.hit / lifetime.input * 100) })} · {t('global.cost')} {formatCost(lifetime.cost)} · {t('hero.thisCost', { cost: formatCost(sessionCost) })}
       </div>
+      {hitRate > 0 && hitRate < 0.5
+        ? (
+          <div className="dsh-board-hint">
+            {t('hint.cacheLow', { percent: Math.round(hitRate * 100), ratio: `${missHitRatio}×` })}
+          </div>
+        )
+        : null}
       <div className="dsh-board-usage">
         <div className="dsh-board-usage-item">
           <span className="dsh-board-usage-label">{t('usage.total')}</span>
@@ -727,6 +737,9 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   const badgeInner = wide
     ? (
       <>
+        <span className={`dsh-board-window dsh-board-window-${liveRate.window}`}>
+          {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
+        </span>
         <span className="dsh-board-badge">
           <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
           <span className="dsh-board-badge-nums">
