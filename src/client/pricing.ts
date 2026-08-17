@@ -1,8 +1,11 @@
 /**
  * Price tables — ¥ per 1M tokens, from the official price list
- * https://api-docs.deepseek.com/zh-cn/quick_start/pricing (fetched 2026-08-15).
+ * https://api-docs.deepseek.com/zh-cn/quick_start/pricing
+ * (fetched 2026-08-15; re-checked 2026-08-17 — the page now lists the
+ * peak/off-peak tables as the primary price list, numbers unchanged).
  *
- * - MODEL_PRICES: the listed standard prices today (thinking-mode inclusive).
+ * - MODEL_PRICES: standard prices, in force until the peak/off-peak scheme
+ *   activates (2026-08-17 00:00 Beijing) and still needed for older usage.
  * - PEAK_PRICES / OFF_PEAK_PRICES: effective 2026-08-17 00:00 Beijing time;
  *   peak windows are 09:00–12:00 and 14:00–18:00 Beijing time, off-peak is
  *   half of peak. `priceFor(model, now)` picks the right table automatically.

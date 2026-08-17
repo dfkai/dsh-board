@@ -39,6 +39,17 @@ dsh --profile <profile> --dump-config   # 应出现 # == dsh-board 层
 
 > **harness 版本要求**：推理 token 按输出价计入用量需要 harness 的 token-meter 修复。补丁已提交官方社区（[discussions/2338](https://github.com/deepseek-ai/deepseek-harness/discussions/2338)，可合并分支 `dfkai/deepseek-harness@fix/token-meter-reasoning-output`）。旧 harness 上分模型/每轮图表仍会计入推理 token，但累计总量与成本会少算推理部分。
 
+## 禁用与配置
+
+插件层按 `id: board` 寻址，可用 patch 关闭或改配置。在你的 profile 的 `cordis.patch.yml` 里追加：
+
+```yaml
+- id: board
+  disabled: true   # 关闭本面板
+```
+
+`disabled` 支持 `!!js` 表达式，也可以按条件开关。价格表等常量为源码级配置（见下方计费口径），改价后重新构建。
+
 ## 计费口径
 
 面板显示的是**估算值，不是计费凭证**，以 DeepSeek 平台账单为准。

@@ -39,6 +39,17 @@ dsh --profile <profile> --dump-config   # should contain the # == dsh-board laye
 
 > **Harness requirement**: counting reasoning tokens at the output rate needs the harness token-meter fix. The patch is posted in the official community ([discussions/2338](https://github.com/deepseek-ai/deepseek-harness/discussions/2338); merge-ready branch `dfkai/deepseek-harness@fix/token-meter-reasoning-output`). On older harnesses the per-turn/per-model charts still include reasoning, but lifetime totals and cost undercount it.
 
+## Disabling & configuration
+
+The plugin row is addressable by `id: board`. Append to your profile's `cordis.patch.yml` to disable it:
+
+```yaml
+- id: board
+  disabled: true   # turn the panel off
+```
+
+`disabled` accepts `!!js` expressions, so it can be toggled conditionally. Price tables are source-level constants (see below); change them and rebuild.
+
 ## Billing notes
 
 The panel shows **estimates, not a billing statement** — the DeepSeek platform bill is authoritative.
