@@ -29,7 +29,7 @@
 - **产品定位**：实时侧栏仪表盘，不做定时报告类功能（与 usage-report 类插件差异化）
 - **视觉**：零装饰动画；徽章渐变保留现有配色（设计选择，不再改动）
 
-## 探索方向（远期 / 独立插件候选）
+## 探索方向（已立项：独立 monorepo → [dfkai/dsh-kit](https://github.com/dfkai/dsh-kit)）
 
 基于对 DSH「一切皆插件 + 组合即配置」机制的调研（antinomie-lab/dsh-explore），dsh-board 的经验可复用到：
 
