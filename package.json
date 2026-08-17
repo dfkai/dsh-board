@@ -1,6 +1,6 @@
 {
   "name": "dsh-board",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "dsh client bundle: a sidebar usage & cost dashboard — token stats, peak/off-peak aware per-model pricing, membership ladder, achievements and a daily heatmap.",
   "type": "module",
   "main": "lib/index.js",

@@ -23,7 +23,7 @@ const packageJson = requireFromProfile.resolve('dsh-board/package.json')
 const installedDir = dirname(packageJson)
 const repoDir = dirname(new URL('../package.json', import.meta.url).pathname)
 
-for (const file of ['client.js', 'client.js.map']) {
+for (const file of ['index.js', 'client.js', 'client.js.map']) {
   const src = join(repoDir, 'lib', file)
   if (!existsSync(src)) continue
   copyFileSync(src, join(installedDir, 'lib', file))

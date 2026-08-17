@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.0 — 2026-08-17
+
+- **累计成本按各会话主导模型计价**：宿主半注册只读 `dominantModel` 会话投影（折叠 request/header，纯函数 + 单测 + 真实注册表集成冒烟 + 缓存行实测），flash 会话不再按 pro 价计
+- 单元测试体系：pricing / fold / levels / model-projection 共 19 个测试，CI 三层门禁（构建 + lib 漂移 + 单测）
+- `pnpm sync` 同时同步宿主半 `lib/index.js`（宿主改动不再漏）
+
 ## v0.1.0 — 2026-08-15（持续更新）
 
 首个版本：**sidebar 脚部的用量/成本面板**（默认展开、可折叠；宽栏徽章升顶展开 / 窄栏浮层）：

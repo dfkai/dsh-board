@@ -7,7 +7,7 @@
 <img src="assets/demo.gif" alt="dsh-board demo" width="100%">
 
 [![npm](https://img.shields.io/npm/v/dsh-board)](https://www.npmjs.com/package/dsh-board)
-[![version](https://img.shields.io/badge/version-v0.1.0-blue)](https://github.com/dfkai/dsh-board/releases)
+[![version](https://img.shields.io/badge/version-v0.2.0-blue)](https://github.com/dfkai/dsh-board/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 [![plugin](https://img.shields.io/badge/dsh--plugin-unofficial-lightgrey)](https://github.com/deepseek-ai/deepseek-harness/discussions/2340)
 [![CI](https://github.com/dfkai/dsh-board/actions/workflows/ci.yml/badge.svg)](https://github.com/dfkai/dsh-board/actions/workflows/ci.yml)
@@ -26,7 +26,7 @@
 
 ```sh
 # npm（推荐）
-dsh plugin --profile <profile> add dsh-board@0.1.0
+dsh plugin --profile <profile> add dsh-board@0.2.0
 # 或从 GitHub 直装
 dsh plugin --profile <profile> add github:dfkai/dsh-board@v0.1.0
 ```
