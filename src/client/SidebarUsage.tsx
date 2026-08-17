@@ -534,9 +534,13 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       input += i
       output += o
       hit += finite(u.cacheReadTokens)
-      // Price each session at the moment of its own activity — not the moment
-      // the panel is opened — so lifetime cost stops drifting with peak/off-peak.
-      cost += estimateCost(u, priceFor(undefined, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
+      // Price each session at its own model and its own activity moment —
+      // never the panel-open moment — so lifetime cost neither drifts with
+      // peak/off-peak nor overprices non-pro sessions.
+      const model = typeof row.projectionValues?.dominantModel === 'string' && row.projectionValues.dominantModel !== ''
+        ? row.projectionValues.dominantModel
+        : undefined
+      cost += estimateCost(u, priceFor(model, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
       if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
         const day = new Date(row.updatedAt).setHours(0, 0, 0, 0)

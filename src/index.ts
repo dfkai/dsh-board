@@ -1,9 +1,15 @@
-// dsh-board — host half.
-//
-// Like the shipped client plugins, the node half is a (near-)empty governed
-// entry: the host Loader owns its lifecycle, and the web plugin registry
-// discovers this package's `dsh.client` declaration from package.json. All
-// capability lives in the browser half (src/client).
+/**
+ * dsh-board host half: registers one read-only session projection —
+ * `dominantModel` — so the client can price every session at its own model's
+ * rate instead of the default model. Everything else stays client-side.
+ */
+import type { Context } from '@deepseek-ai/cordis'
+import { modelProjectionDefinition } from './host/model-projection.ts'
+
 export const name = 'dsh-board'
 
-export function apply(): void {}
+export function apply(ctx: Context): void {
+  ctx.inject(['sessionProjections'], (projectionCtx) => {
+    projectionCtx.sessionProjections.register(modelProjectionDefinition)
+  })
+}

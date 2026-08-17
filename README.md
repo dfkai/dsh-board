@@ -75,12 +75,12 @@ dsh --profile <profile> --dump-config   # 应出现 # == dsh-board 层
 口径说明：
 
 - **推理 token 按输出价计入**（DeepSeek 官方计费口径），`reasoningTokens` 已并入输出
-- **本会话成本**按主导模型计价；**累计成本**按各会话最近活跃时刻对应的峰谷价与默认模型（v4-pro）估算
+- **本会话成本**按主导模型计价；**累计成本**按各会话最近活跃时刻对应的峰谷价与该会话的主导模型计价（未知模型回落默认模型 v4-pro）
 - 未知模型回落当前时刻价表中默认模型的费率
 
 ## 数据与隐私
 
-全部数据来自本机 DSH 的公开接口（`session.list` 投影 + `session.history` RPC）。插件**不发起任何第三方网络请求**，唯一持久化是浏览器 localStorage 里的面板折叠状态。
+全部数据来自本机 DSH 的公开接口（`session.list` 投影 + `session.history` RPC）。插件**不发起任何第三方网络请求**，唯一持久化是浏览器 localStorage 里的面板折叠状态；宿主半仅注册一个只读会话投影（`dominantModel`），不写入任何数据。
 
 ## FAQ
 
@@ -90,7 +90,7 @@ dsh --profile <profile> --dump-config   # 应出现 # == dsh-board 层
 
 **成本准吗？**
 
-按官方价目估算（峰谷自动切换、推理 token 已计入），不是计费凭证。累计成本按默认模型与各会话活跃时刻估算，具体金额以 DeepSeek 平台账单为准。
+按官方价目估算（峰谷自动切换、推理 token 已计入），不是计费凭证。累计成本按各会话主导模型与其活跃时刻估算（宿主半仅注册一个只读的 `dominantModel` 投影，无任何写入），具体金额以 DeepSeek 平台账单为准。
 
 **数据会外发吗？**
 
@@ -119,7 +119,7 @@ python3 test/drive-turn.py '...'    # 驱动真实对话读面板数值
 
 | 面 | 内容 |
 |---|---|
-| 宿主半 `src/index.ts` | 空 `apply` 的受治理条目（与官方 client 插件同构） |
+| 宿主半 `src/index.ts` | 注册一个只读的 `dominantModel` 会话投影（让累计成本按真实模型计价）；零写入、零外发 |
 | 浏览器半 `src/client/*` | `ctx.slots.inject('sidebar.footer.action', …)` 注册横版徽章；数据 = session-list store 的 `projectionValues` + `session.history` RPC 折叠 |
 | 构建 `tsdown.config.ts` | CJS 闭包工厂（`window.__ModuleLoader__.load`）+ 平台白名单 externals |
 

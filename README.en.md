@@ -75,7 +75,7 @@ The panel shows **estimates, not a billing statement** — the DeepSeek platform
 Notes:
 
 - **Reasoning tokens are counted at the output rate** (DeepSeek's billing semantics); `reasoningTokens` is folded into output
-- **This-session cost** uses the dominant model; **lifetime cost** prices each session at its last-activity moment with the default model (v4-pro)
+- **This-session cost** uses the dominant model; **lifetime cost** prices each session at its last-activity moment with that session's dominant model (unknown models fall back to v4-pro)
 - Unknown models fall back to the default model's rate in the table of the current moment
 
 ## Data & privacy
@@ -90,7 +90,7 @@ The accounting matches the DeepSeek backend: every turn re-prices the context pr
 
 **Is the cost accurate?**
 
-It follows the official price list (peak/off-peak aware, reasoning included) but is not a billing statement. Lifetime cost uses the default model and each session's last-activity moment; the DeepSeek platform bill is authoritative.
+It follows the official price list (peak/off-peak aware, reasoning included) but is not a billing statement. Lifetime cost uses each session's dominant model and last-activity moment; the DeepSeek platform bill is authoritative.
 
 **Does any data leave my machine?**
 
@@ -119,7 +119,7 @@ Public seams only:
 
 | Side | Contents |
 |---|---|
-| Host half `src/index.ts` | an empty-`apply` governed entry (same shape as official client plugins) |
+| Host half `src/index.ts` | registers one read-only `dominantModel` session projection so lifetime cost uses each session's real model; zero writes |
 | Browser half `src/client/*` | `ctx.slots.inject('sidebar.footer.action', …)` registers the badge; data = session-list store `projectionValues` + `session.history` RPC folding |
 | Build `tsdown.config.ts` | CJS closure factory (`window.__ModuleLoader__.load`) + platform whitelist externals |
 
