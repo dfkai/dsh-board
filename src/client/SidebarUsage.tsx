@@ -758,11 +758,13 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     ? <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>
     : (
       <>
-        <span className={`dsh-board-window dsh-board-window-${liveRate.window}`}>
-          {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
-        </span>
         <span className="dsh-board-badge">
-          <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
+          <span className="dsh-board-badge-head">
+            <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
+            <span className={`dsh-board-window dsh-board-window-${liveRate.window}`}>
+              {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
+            </span>
+          </span>
           <span className="dsh-board-badge-nums">
             <span className="dsh-board-badge-cost">{formatCost(lifetime.cost)}</span>
             <span className="dsh-board-badge-tokens">{formatTokens(lifetime.total, lang)} {t('global.tokens')}</span>

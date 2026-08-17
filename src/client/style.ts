@@ -46,6 +46,15 @@ const CSS = `
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: 100%;
+}
+/* Header row: rank tag on the left, live rate chip on the right. */
+.dsh-board-badge-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
 }
 /* Rank title: a tier-colored pill tag with white text. */
 .dsh-board-tag {
@@ -93,9 +102,7 @@ const CSS = `
 }
 /* Live rate chip: which regime and the current output ¥/M. */
 .dsh-board-window {
-  position: absolute;
-  top: 6px;
-  right: 8px;
+  flex: none;
   padding: 1px 6px;
   border-radius: 6px;
   font-size: 10px;
