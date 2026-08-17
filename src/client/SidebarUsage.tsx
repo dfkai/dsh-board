@@ -460,13 +460,20 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   const orbRef = useRef<HTMLButtonElement | null>(null)
   const railPanelRef = useRef<HTMLDivElement | null>(null)
   const [railPos, setRailPos] = useState<{ left: number; top: number } | null>(null)
-  const panelVisible = wide ? !collapsed : open
+  const [footWidth, setFootWidth] = useState<number | null>(null)
+  // Wide tile degrades to a compact orb when the footer row is shared with
+  // other entries (the host lays footer actions out in a nowrap flex row, so
+  // co-installed plugins split the width). The popover machinery then takes
+  // over — same behavior as the narrow rail.
+  const compact = wide && footWidth !== null && footWidth < 200
+  const popover = !wide || compact
+  const panelVisible = popover ? open : !collapsed
 
-  // Rail mode: the sidebar column is ~56px wide and clips overflow, so the
-  // popover escapes via position:fixed anchored beside the orb (wide mode
-  // keeps the badge-rides-up unit inside the column instead).
+  // Popover mode (rail or squeezed footer): the column clips overflow, so the
+  // panel escapes via position:fixed anchored beside the orb. The full-width
+  // wide tile keeps the badge-rides-up unit inside the column instead.
   useLayoutEffect(() => {
-    if (wide || !open) {
+    if (!popover || !open) {
       setRailPos(null)
       return
     }
@@ -484,7 +491,20 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
-  }, [wide, open])
+  }, [popover, open])
+
+  // Track the foot's real width so the compact fallback follows the host's
+  // flex sharing as other footer entries come and go.
+  useEffect(() => {
+    const el = rootRef.current
+    if (el === null || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width
+      if (width !== undefined) setFootWidth(width)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   // Never show the previous session's series while a new one loads (or on
   // failure — stale per-turn/per-model data would misprice this session).
@@ -505,18 +525,18 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     return () => { cancelled = true }
   }, [current, api, panelVisible])
 
-  const panelOpen = wide ? !collapsed : open
+  const panelOpen = popover ? open : !collapsed
   useEffect(() => {
     if (!panelOpen) return
     const onDown = (event: PointerEvent): void => {
       if (event.target instanceof Node && rootRef.current !== null && !rootRef.current.contains(event.target)) {
-        if (wide) setCollapsed(true)
-        else setOpen(false)
+        if (popover) setOpen(false)
+        else setCollapsed(true)
       }
     }
     document.addEventListener('pointerdown', onDown)
     return () => document.removeEventListener('pointerdown', onDown)
-  }, [panelOpen, wide])
+  }, [panelOpen, popover])
 
   const lifetime = useMemo(() => {
     let input = 0
@@ -601,12 +621,12 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   const usageStats = useMemo(() => computeStats(lifetime.daily, ids.length), [lifetime.daily, ids.length])
 
   const toggle = (): void => {
-    if (wide) {
+    if (popover) {
+      setOpen(value => !value)
+    } else {
       const next = !collapsed
       setCollapsed(next)
       try { localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0') } catch { /* ignore */ }
-    } else {
-      setOpen(value => !value)
     }
   }
 
@@ -624,7 +644,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
               type="button"
               className="dsh-board-close"
               aria-label={t('panel.collapse.aria')}
-              onClick={() => { if (wide) setCollapsed(true); else setOpen(false) }}
+              onClick={() => { if (popover) setOpen(false); else setCollapsed(true) }}
             >
               ✕
             </button>
@@ -645,7 +665,7 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
             type="button"
             className="dsh-board-close"
             aria-label={t('panel.collapse.aria')}
-            onClick={() => { if (wide) setCollapsed(true); else setOpen(false) }}
+            onClick={() => { if (popover) setOpen(false); else setCollapsed(true) }}
           >
             ✕
           </button>
@@ -734,8 +754,9 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     </div>
   )
 
-  const badgeInner = wide
-    ? (
+  const badgeInner = popover
+    ? <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>
+    : (
       <>
         <span className={`dsh-board-window dsh-board-window-${liveRate.window}`}>
           {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
@@ -752,16 +773,15 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         {running ? <StateDot state="ongoing" className="dsh-board-live-dot" /> : null}
       </>
     )
-    : <span className="dsh-board-orb-emoji">{rank.level.emoji}</span>
 
   const triggerButton = (
     <button
       ref={orbRef}
       type="button"
-      className={wide ? 'dsh-board-trigger' : 'dsh-board-trigger dsh-board-orb'}
+      className={popover ? 'dsh-board-trigger dsh-board-orb' : 'dsh-board-trigger'}
       style={{ '--tier': rank.level.color } as never}
-      aria-expanded={wide ? !collapsed : open}
-      aria-label={wide ? undefined : `${rankName} · ${t('panel.title')}`}
+      aria-expanded={popover ? open : !collapsed}
+      aria-label={popover ? `${rankName} · ${t('panel.title')}` : undefined}
       title={rankName}
       onClick={toggle}
     >
@@ -771,16 +791,8 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
 
   return (
     <div ref={rootRef} className={wide ? 'dsh-board-foot dsh-board-wide' : 'dsh-board-foot'}>
-      {wide
-        ? (collapsed
-          ? triggerButton
-          : (
-            <div className="dsh-board-float dsh-board-open">
-              {triggerButton}
-              {panel}
-            </div>
-          ))
-        : (
+      {popover
+        ? (
           <>
             {triggerButton}
             {open
@@ -797,7 +809,15 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
               )
               : null}
           </>
-        )}
+        )
+        : (collapsed
+          ? triggerButton
+          : (
+            <div className="dsh-board-float dsh-board-open">
+              {triggerButton}
+              {panel}
+            </div>
+          ))}
     </div>
   )
 })
