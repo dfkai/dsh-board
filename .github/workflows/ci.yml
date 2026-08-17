@@ -35,3 +35,5 @@ jobs:
 
       - name: Verify package manifest
         run: node -e "const p=require('./package.json'); if(!p.name||!p.exports||!p.dsh) process.exit(1)"
+      - name: Unit tests
+        run: pnpm test

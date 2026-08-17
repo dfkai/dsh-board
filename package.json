@@ -59,11 +59,13 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "sync": "node scripts/sync.mjs",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
     "tsdown": "^0.22.14",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }
