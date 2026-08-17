@@ -29,17 +29,9 @@
 - **产品定位**：实时侧栏仪表盘，不做定时报告类功能（与 usage-report 类插件差异化）
 - **视觉**：零装饰动画；徽章渐变保留现有配色（设计选择，不再改动）
 
-## 探索方向（已立项：独立 monorepo → [dfkai/dsh-kit](https://github.com/dfkai/dsh-kit)）
-
-基于对 DSH「一切皆插件 + 组合即配置」机制的调研（antinomie-lab/dsh-explore），dsh-board 的经验可复用到：
-
-1. **💰 成本感知提示词段**：systemPrompt 段插件，向模型注入「本会话已花 ¥X / 预算 ¥Y」，让 agent 自己学会省着花——与 dsh-board 共享投影 seam
-2. **🎛 预算总督**：读 token-meter 投影 + 实时费率，超阈值自动切模型 / 降 reasoningEffort（Provider 级策略，热插拔）
-3. **📦 成本敏感 preset**：ship 一个 session 级预设（persona + 预算段 + 精简工具集 + dsh-board）
-4. **🧩 组合树可视化**：把五层 patch 叠层结果与 effect 诊断树画成侧栏面板（DSH 版 Composition 面板）
-5. **🔁 实现热换 GUI**：一键切换 shell/搜索/文件权限等 Provider 实现，展示「换实现不重启」
-
 ## 不计划
+
+- 生态扩展（成本提示段/预算总督/组合可视化/实现热换等独立插件）：**暂停**——曾作为实验仓库 dsh-kit 立项，已按用户决定删除，专注打磨面板本体
 
 - 定时日报/周报/邮件报告（与产品定位冲突）
 - 云端账单同步、跨设备漫游（违背"本地统计、零外发"承诺）
