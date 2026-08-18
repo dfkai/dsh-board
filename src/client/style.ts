@@ -10,6 +10,13 @@ const CSS = `
 .dsh-board-foot {
   position: relative;
   width: 100%;
+  flex: 0 1 100%;
+  min-width: 100%;
+}
+/* The host lays footer entries out in a nowrap row; our tile claims a full
+   line and lets sibling entries wrap below it instead of squeezing it. */
+div:has(> div > .dsh-board-foot) {
+  flex-wrap: wrap;
 }
 
 /* Trigger: a square stat tile spanning the sidebar menu width. */
@@ -122,6 +129,13 @@ const CSS = `
 .dsh-board-window-offpeak {
   color: var(--dsw-alias-state-success-primary, #16a34a);
   background: color-mix(in srgb, var(--dsw-alias-state-success-primary, #16a34a) 12%, transparent);
+}
+/* Narrow tile (shared footer row): keep the window label, drop the rate. */
+.dsh-board-narrow .dsh-board-chip-rate {
+  display: none;
+}
+.dsh-board-narrow .dsh-board-badge-head {
+  justify-content: flex-start;
 }
 /* Rail: a plain circular entry. */
 .dsh-board-orb {

@@ -466,6 +466,8 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
   // co-installed plugins split the width). The popover machinery then takes
   // over — same behavior as the narrow rail.
   const compact = wide && footWidth !== null && footWidth < 200
+  // Between compact and full width the tile stays but trims the chip text.
+  const narrow = wide && !compact && footWidth !== null && footWidth < 250
   const popover = !wide || compact
   const panelVisible = popover ? open : !collapsed
 
@@ -762,7 +764,8 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
           <span className="dsh-board-badge-head">
             <span className="dsh-board-tag" style={{ background: rank.level.color }}>{rankName}</span>
             <span className={`dsh-board-window dsh-board-window-${liveRate.window}`}>
-              {t(`chip.${liveRate.window}` as RichKey)} · {t('chip.rate', { price: liveRate.price.outputPerM })}
+              <span>{t(`chip.${liveRate.window}` as RichKey)}</span>
+              <span className="dsh-board-chip-rate"> · {t('chip.rate', { price: liveRate.price.outputPerM })}</span>
             </span>
           </span>
           <span className="dsh-board-badge-nums">
@@ -791,8 +794,11 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     </button>
   )
 
+  const rootClass = !wide
+    ? 'dsh-board-foot'
+    : `dsh-board-foot dsh-board-wide${compact ? ' dsh-board-compact' : ''}${narrow ? ' dsh-board-narrow' : ''}`
   return (
-    <div ref={rootRef} className={wide ? 'dsh-board-foot dsh-board-wide' : 'dsh-board-foot'}>
+    <div ref={rootRef} className={rootClass}>
       {popover
         ? (
           <>
