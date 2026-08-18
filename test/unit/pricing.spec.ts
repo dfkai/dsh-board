@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentRate, DEFAULT_MODEL, MODEL_PRICES, OFF_PEAK_PRICES, PEAK_PRICES, estimateCost, isPeakHour, priceFor } from '../../src/client/pricing.ts'
+import { currentRate, DEFAULT_MODEL, MODEL_PRICES, OFF_PEAK_PRICES, PEAK_PRICES, estimateCost, isPeakHour, priceFor } from '../../src/pricing.ts'
 
 // EFFECTIVE_AT_MS = 2026-08-17 00:00 Beijing = 2026-08-16T16:00Z
 const BEFORE = Date.UTC(2026, 7, 16, 15, 59)

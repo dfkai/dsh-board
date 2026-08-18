@@ -3,7 +3,7 @@ import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
 import { NS, type RichKey } from './locales.ts'
-import { currentRate, estimateCost, priceFor } from './pricing.ts'
+import { currentRate, estimateCost, priceFor } from '../pricing.ts'
 import { foldHistory, formatCost, formatDuration, formatTokens, type HistoryFold, type Lang, type TurnUsage } from './fold.ts'
 import { LEVELS, rankFor } from './levels.ts'
 import { ACHIEVEMENTS, computeStats, type UsageStats } from './achievements.ts'
@@ -559,10 +559,18 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
       // Price each session at its own model and its own activity moment —
       // never the panel-open moment — so lifetime cost neither drifts with
       // peak/off-peak nor overprices non-pro sessions.
-      const model = typeof row.projectionValues?.dominantModel === 'string' && row.projectionValues.dominantModel !== ''
-        ? row.projectionValues.dominantModel
-        : undefined
-      cost += estimateCost(u, priceFor(model, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
+      // Prefer the host's per-event cost projection (same per-request口径 as
+      // the platform bill); fall back to a last-activity-moment estimate for
+      // sessions that predate the projection.
+      const projectedCost = row.projectionValues?.sessionCost
+      if (typeof projectedCost === 'number' && Number.isFinite(projectedCost)) {
+        cost += projectedCost
+      } else {
+        const model = typeof row.projectionValues?.dominantModel === 'string' && row.projectionValues.dominantModel !== ''
+          ? row.projectionValues.dominantModel
+          : undefined
+        cost += estimateCost(u, priceFor(model, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
+      }
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
       if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
         const day = new Date(row.updatedAt).setHours(0, 0, 0, 0)
@@ -610,7 +618,12 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
     return best
   }, [fold])
 
-  const sessionCost = usage === undefined ? 0 : estimateCost(usage, priceFor(dominantModel))
+  const projectedSessionCost = summary?.projectionValues?.sessionCost
+  const sessionCost = usage === undefined
+    ? 0
+    : typeof projectedSessionCost === 'number' && Number.isFinite(projectedSessionCost)
+      ? projectedSessionCost
+      : estimateCost(usage, priceFor(dominantModel))
 
   // Stable arrays for the memoized chart children — slicing inline would
   // rebuild them on every render and defeat the memo bail-out.
