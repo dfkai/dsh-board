@@ -572,7 +572,18 @@ export const SidebarUsage = memo(function SidebarUsage({ wide, useSessions, api,
         cost += estimateCost(u, priceFor(model, Number.isFinite(row.updatedAt) && row.updatedAt > 0 ? row.updatedAt : undefined))
       }
       sessions.push({ id, title: row.displayTitle ?? row.title ?? String(id).slice(0, 8), tokens: i + o })
-      if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
+      // Prefer the host's per-day buckets (real consumption per calendar
+      // day); fall back to last-activity attribution for sessions that
+      // predate the projection.
+      const tokenDays = row.projectionValues?.tokenDays
+      if (tokenDays !== null && typeof tokenDays === 'object') {
+        for (const [dayKey, dayTokens] of Object.entries(tokenDays)) {
+          const day = Number(dayKey)
+          if (Number.isFinite(day) && typeof dayTokens === 'number' && dayTokens > 0) {
+            daily.set(day, (daily.get(day) ?? 0) + dayTokens)
+          }
+        }
+      } else if (Number.isFinite(row.updatedAt) && row.updatedAt > 0) {
         const day = new Date(row.updatedAt).setHours(0, 0, 0, 0)
         daily.set(day, (daily.get(day) ?? 0) + i + o)
       }
